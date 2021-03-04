@@ -95,8 +95,10 @@ def calendar(request):
     for event in events['value']:
       event['start']['dateTime'] = parser.parse(event['start']['dateTime'])
       event['end']['dateTime'] = parser.parse(event['end']['dateTime'])
+      """
+      accesso alle coordinate
       locations = event["locations"]
-      if len(locations) > 0:
+      if len(locations) > 0 and locations[0].get("coordinates"):
           location = locations[0]
           latitude = str(location["coordinates"]["latitude"])
           longitude = str(location["coordinates"]["longitude"])
@@ -105,8 +107,47 @@ def calendar(request):
           longitude = ""
       event['coordinates'] = {}
       event['coordinates']['latitude'] = latitude
-      event['coordinates']['longitude'] = longitude
+      event['coordinates']['longitude'] = longitude"""
 
     context['events'] = events['value']
 
   return render(request, 'calendar.html', context)
+
+def newevent(request):
+  context = initialize_context(request)
+  user = context['user']
+
+  if request.method == 'POST':
+    # Validate the form values
+    # Required values
+    if (not request.POST['ev-subject']) or \
+       (not request.POST['ev-start']) or \
+       (not request.POST['ev-end']):
+      context['errors'] = [
+        { 'message': 'Invalid values', 'debug': 'The subject, start, and end fields are required.'}
+      ]
+      return render(request, 'tutorial/newevent.html', context)
+
+    attendees = None
+    if request.POST['ev-attendees']:
+      attendees = request.POST['ev-attendees'].split(';')
+    body = request.POST['ev-body']
+
+    # Create the event
+    token = get_token(request)
+
+    create_event(
+      token,
+      request.POST['ev-subject'],
+      request.POST['ev-start'],
+      request.POST['ev-end'],
+      request.POST['ev-location'],
+      attendees,
+      request.POST['ev-body'],
+      user['timeZone'])
+
+    # Redirect back to calendar view
+    return HttpResponseRedirect(reverse('calendar'))
+  else:
+    # Render the form
+    return render(request, 'newevent.html', context)
