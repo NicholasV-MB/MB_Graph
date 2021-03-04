@@ -5,5 +5,21 @@ from datetime import datetime, timedelta
 from dateutil import tz, parser
 
 def home(request):
-  # Temporary!
-  return HttpResponse("Welcome to the tutorial.")
+  context = initialize_context(request)
+
+  return render(request, 'home.html', context)
+
+
+def initialize_context(request):
+  context = {}
+
+  # Check for any errors in the session
+  error = request.session.pop('flash_error', None)
+
+  if error != None:
+    context['errors'] = []
+    context['errors'].append(error)
+
+  # Check for user in the session
+  context['user'] = request.session.get('user', {'is_authenticated': False})
+  return context
