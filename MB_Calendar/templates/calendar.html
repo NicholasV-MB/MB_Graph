@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Calendar</h1>
+<a href="/calendar/new" class="btn btn-light btn-sm mb-3">New event</a>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Organizer</th>
+      <th scope="col">Subject</th>
+      <th scope="col">Start</th>
+      <th scope="col">End</th>
+      <th scope="col">Body</th>
+      <th scope="col">Location</th>
+      <th scope="col">Latitude</th>
+      <th scope="col">Longitude</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if events %}
+      {% for event in events %}
+        <tr>
+          <td>{{ event.organizer.emailAddress.name }}</td>
+          <td>{{ event.subject }}</td>
+          <td>{{ event.start.dateTime|date:'d/n/Y g:i A' }}</td>
+          <td>{{ event.end.dateTime|date:'d/n/Y g:i A' }}</td>
+          <td>{{ event.bodyPreview }}</td>
+          <td>{{ event.location.displayName }}</td>
+          <td>{{ event.coordinates.latitude }}</td>
+          <td>{{ event.coordinates.longitude }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+{% endblock %}

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from dateutil import tz, parser
 from MB_Calendar.auth_helper import get_sign_in_flow, get_token_from_code, store_user, remove_user_and_token, get_token
 from MB_Calendar.graph_helper import *
+from MB_Calendar.utils_graph_helper import *
 
 def home(request):
   context = initialize_context(request)
@@ -53,3 +54,59 @@ def sign_out(request):
   remove_user_and_token(request)
 
   return HttpResponseRedirect(reverse('home'))
+
+def calendar(request):
+  context = initialize_context(request)
+  user = context['user']
+
+  # Load the user's time zone
+  # Microsoft Graph can return the user's time zone as either
+  # a Windows time zone name or an IANA time zone identifier
+  # Python datetime requires IANA, so convert Windows to IANA
+  time_zone = get_iana_from_windows(user['timeZone'])
+  tz_info = tz.gettz(time_zone)
+
+  # Get midnight today in user's time zone
+  today = datetime.now(tz_info).replace(
+    hour=0,
+    minute=0,
+    second=0,
+    microsecond=0)
+
+  # Based on today, get the start of the week (Sunday)
+  if (today.weekday() != 6):
+    start = today - timedelta(days=today.isoweekday())
+  else:
+    start = today
+
+  end = start + timedelta(days=7)
+
+  token = get_token(request)
+
+  events = get_calendar_events(
+    token,
+    start.isoformat(timespec='seconds'),
+    end.isoformat(timespec='seconds'),
+    user['timeZone'])
+
+  if events:
+    # Convert the ISO 8601 date times to a datetime object
+    # This allows the Django template to format the value nicely
+    for event in events['value']:
+      event['start']['dateTime'] = parser.parse(event['start']['dateTime'])
+      event['end']['dateTime'] = parser.parse(event['end']['dateTime'])
+      locations = event["locations"]
+      if len(locations) > 0:
+          location = locations[0]
+          latitude = str(location["coordinates"]["latitude"])
+          longitude = str(location["coordinates"]["longitude"])
+      else:
+          latitude = ""
+          longitude = ""
+      event['coordinates'] = {}
+      event['coordinates']['latitude'] = latitude
+      event['coordinates']['longitude'] = longitude
+
+    context['events'] = events['value']
+
+  return render(request, 'calendar.html', context)
