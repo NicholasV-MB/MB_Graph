@@ -1,7 +1,30 @@
 {% extends "layout.html" %}
 {% block content %}
 <h1>Calendar</h1>
-<a href="/calendar/new" class="btn btn-light btn-sm mb-3">New event</a>
+<a href="/calendar/new" class="btn btn-primary mr-2">New event</a>
+<form method="POST">
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="col">
+      <div class="form-group">
+        <label>Start Interval</label>
+        <input class="form-control" name="ti-start" type="datetime-local">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label>End Interval</label>
+        <input class="form-control" name="ti-end" type="datetime-local">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label> <font color="white" > Button </font> </label>
+        <input class="form-control btn btn-primary mr-2" type="submit" value="SHOW" />
+      </div>
+    </div>
+  </div>
+</form>
 <table class="table">
   <thead>
     <tr>
@@ -16,7 +39,7 @@
   <tbody>
     {% if events %}
       {% for event in events %}
-        <tr>
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#ffffff{% else %}#b5b5b5{% endif %}">
           <td>{{ event.organizer.emailAddress.name }}</td>
           <td>{{ event.subject }}</td>
           <td>{{ event.start.dateTime|date:'d/n/Y g:i A' }}</td>
