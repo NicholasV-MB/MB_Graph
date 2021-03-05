@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+
+<span style="font-family: Arial; font-weight: bold;">Locations of events from {{ str_start }} to {{ str_end }}</span>
+<div style="width:100%; height:100px" id="map"></div>
+<script type="text/javascript">
+  document.getElementById("map").style.height = window.innerHeight-100+"px"
+// Posizione iniziale della mappa
+    var lat=46.117620;
+    var lon=13.194870;
+    var zoom=6;
+    var all_markers = [];
+
+    map = new OpenLayers.Map ("map", {
+      controls:[
+         new OpenLayers.Control.Navigation(),
+         new OpenLayers.Control.PanZoomBar(),
+         new OpenLayers.Control.ScaleLine(),
+         new OpenLayers.Control.Permalink('permalink'),
+         new OpenLayers.Control.MousePosition(),
+         new OpenLayers.Control.Attribution()
+	      ],
+      projection: new OpenLayers.Projection("EPSG:900913"),
+      displayProjection: new OpenLayers.Projection("EPSG:4326")
+      } );
+
+		var mapnik = new OpenLayers.Layer.OSM("OpenStreetMap (Mapnik)");
+
+		map.addLayer(mapnik);
+
+
+
+    var LayerMarkers = new OpenLayers.Layer.Markers( "Markers" );
+    map.addLayer(LayerMarkers);
+    var MB_marker = make_marker("Modulblok Headquarter<br>Via Vanelis, 6, Pagnacco (UD)", lat, lon)
+    all_markers.push(MB_marker);
+
+
+    var center = new OpenLayers.LonLat( 12.388889, 43.112221 ).transform(
+      new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+      map.getProjectionObject() // to Spherical Mercator Projection
+    );
+		map.setCenter (center, zoom);
+
+
+
+  {% if events %}
+    {% for event in events %}
+      var repl1 = "{{event.text}}".replace(/&lt;/g, "<")
+      var text = repl1.replace(/&gt;/g, ">")
+      var marker = make_marker(text, "{{event.latitude}}", "{{event.longitude}}");
+      all_markers.push(marker);
+    {% endfor %}
+  {% endif %}
+
+
+  function make_marker(text, latitude, longitude){
+    var lonLat = new OpenLayers.LonLat( longitude, latitude ).transform(
+      new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+      map.getProjectionObject() // to Spherical Mercator Projection
+    );
+    var marker = new OpenLayers.Marker(lonLat)
+    LayerMarkers.addMarker(marker);
+    marker.events.register('mouseover', marker, function(evt) {
+      popup = new OpenLayers.Popup.FramedCloud("Popup",
+          this.lonlat,
+          null,
+          "<div>"+text+"</div>",
+          null,
+          false);
+      map.addPopup(popup);
+  });
+  marker.events.register('mouseout', marker, function(evt) {popup.hide();});
+  return marker;
+  }
+</script>
+{% endblock %}

@@ -13,4 +13,5 @@ urlpatterns = [
   path('calendar/new', views.newevent, name='newevent'),
   path('calendar/edit/<id>', views.editevent, name='editevent'),
   path('calendar/delete/<id>', views.delevent, name='delevent'),
+  path('calendar/viewmap', views.viewmap, name='viewmap'),
 ]

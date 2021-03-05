@@ -2,6 +2,7 @@
 {% block content %}
 <h1>Calendar</h1>
 <a href="/calendar/new" class="btn btn-primary mr-2">New event</a>
+<a href="/calendar/viewmap?start={{ str_start }}&end={{ str_end }}" class="btn btn-primary mr-2" style="float:right; background-color:#28a745; border-color:#28a745">View Map</a>
 <form method="GET">
   {% csrf_token %}
   <div class="form-row">
