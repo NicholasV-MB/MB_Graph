@@ -7,13 +7,13 @@
   <div class="form-row">
     <div class="col">
       <div class="form-group">
-        <label>Start Interval</label>
+        <label><b>Start Interval</b></label>
         <input class="form-control" name="ti-start" type="datetime-local" value="{{ str_start }}">
       </div>
     </div>
     <div class="col">
       <div class="form-group">
-        <label>End Interval</label>
+        <label><b>End Interval</b></label>
         <input class="form-control" name="ti-end" type="datetime-local" value="{{ str_end }}">
       </div>
     </div>
@@ -33,7 +33,8 @@
       <th scope="col">Start</th>
       <th scope="col">End</th>
       <th scope="col">Body</th>
-      <th scope="col">Location</th>
+      <th scope="col" colspan="3">Location</th>
+
     </tr>
   </thead>
   <tbody>
@@ -46,6 +47,8 @@
           <td>{{ event.end.dateTime|date:'d/n/Y g:i A' }}</td>
           <td>{{ event.bodyPreview }}</td>
           <td>{{ event.location.displayName }}</td>
+          <td><a href="/calendar/edit/{{event.id}}" class="btn btn-info">Edit</a></td>
+          <td><a href="/calendar/delete/{{event.id}}" class="btn btn-danger">Delete</a></td>
         </tr>
       {% endfor %}
     {% endif %}

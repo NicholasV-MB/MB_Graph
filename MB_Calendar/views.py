@@ -80,7 +80,6 @@ def calendar(request):
       end = start + timedelta(days=31)
 
   else:
-      print(request.GET.get("ti-start"))
       start_dt = datetime.fromisoformat(request.GET.get("ti-start"))
       start = datetime(
         start_dt.year,
@@ -176,3 +175,61 @@ def newevent(request):
   else:
     # Render the form
     return render(request, 'newevent.html', context)
+
+def editevent(request, id):
+  token = get_token(request)
+  context = initialize_context(request)
+  user = context['user']
+  event = get_calendar_event(token, id,  user['timeZone'])
+  context['event'] = event
+  attendees = ""
+  if event.get('attendees'):
+    attendees_list = []
+    for attendee in event["attendees"]:
+        if attendee.get("emailAddress") and attendee.get("emailAddress").get("address"):
+            attendees_list.append(attendee["emailAddress"]["address"])
+    attendees = ';'.join([att for att in attendees_list])
+
+  context['event']['attendees_list'] = attendees
+  context['event']["start"]["dateTime"] = event["start"]["dateTime"].split(".")[0]
+  context['event']["end"]["dateTime"] = event["end"]["dateTime"].split(".")[0]
+  str_after = event["body"]["content"].split("<div class=\"PlainText\">")[1]
+
+  context['event']["str_body"] = str_after.split("</div>")[0]
+
+  if request.POST:
+      # Validate the form values
+      # Required values
+      if (not request.POST['ev-subject']) or \
+         (not request.POST['ev-start']) or \
+         (not request.POST['ev-end']):
+        context['errors'] = [
+          { 'message': 'Invalid values', 'debug': 'The subject, start, and end fields are required.'}
+        ]
+        return render(request, 'tutorial/newevent.html', context)
+
+      attendees = None
+      if request.POST['ev-attendees']:
+        attendees = request.POST['ev-attendees'].split(';')
+      body = request.POST['ev-body']
+      update_event(
+        token,
+        id,
+        request.POST['ev-subject'],
+        request.POST['ev-start'],
+        request.POST['ev-end'],
+        request.POST['ev-location'],
+        attendees,
+        request.POST['ev-body'],
+        user['timeZone'])
+
+      # Redirect back to calendar view
+      return HttpResponseRedirect(reverse('calendar'))
+  else:
+      return render(request, 'editevent.html', context)
+
+
+def delevent(request, id):
+  token = get_token(request)
+  delete_event(token, id)
+  return HttpResponseRedirect(reverse('calendar'))
