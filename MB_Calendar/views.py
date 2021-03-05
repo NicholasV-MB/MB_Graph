@@ -65,21 +65,45 @@ def calendar(request):
   # Python datetime requires IANA, so convert Windows to IANA
   time_zone = get_iana_from_windows(user['timeZone'])
   tz_info = tz.gettz(time_zone)
+  if (
+    request.GET.get("ti-start")==None or
+    request.GET.get("ti-start")=="" or
+    request.GET.get("ti-end")==None or
+    request.GET.get("ti-end")=='' ):
+      # Get midnight today in user's time zone
+      start = datetime.now(tz_info).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0)
 
-  # Get midnight today in user's time zone
-  today = datetime.now(tz_info).replace(
-    hour=0,
-    minute=0,
-    second=0,
-    microsecond=0)
+      end = start + timedelta(days=31)
 
-  # Based on today, get the start of the week (Sunday)
-  if (today.weekday() != 6):
-    start = today - timedelta(days=today.isoweekday())
   else:
-    start = today
+      print(request.GET.get("ti-start"))
+      start_dt = datetime.fromisoformat(request.GET.get("ti-start"))
+      start = datetime(
+        start_dt.year,
+        start_dt.month,
+        start_dt.day,
+        start_dt.hour,
+        start_dt.minute,
+        start_dt.second,
+        start_dt.microsecond,
+        tz_info)
+      end_dt = datetime.fromisoformat(request.GET.get("ti-end"))
+      end = datetime(
+         end_dt.year,
+         end_dt.month,
+         end_dt.day,
+         end_dt.hour,
+         end_dt.minute,
+         end_dt.second,
+         end_dt.microsecond,
+         tz_info)
 
-  end = start + timedelta(days=7)
+  context["str_start"] = start.strftime('%Y-%m-%dT%H:%M')
+  context["str_end"] = end.strftime('%Y-%m-%dT%H:%M')
 
   token = get_token(request)
 
@@ -96,7 +120,7 @@ def calendar(request):
       event['start']['dateTime'] = parser.parse(event['start']['dateTime'])
       event['end']['dateTime'] = parser.parse(event['end']['dateTime'])
       """
-      accesso alle coordinate
+      accesso alle coordinate fornite da graph
       locations = event["locations"]
       if len(locations) > 0 and locations[0].get("coordinates"):
           location = locations[0]
@@ -107,7 +131,8 @@ def calendar(request):
           longitude = ""
       event['coordinates'] = {}
       event['coordinates']['latitude'] = latitude
-      event['coordinates']['longitude'] = longitude"""
+      event['coordinates']['longitude'] = longitude
+      """
 
     context['events'] = events['value']
 

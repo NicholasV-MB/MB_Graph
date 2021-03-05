@@ -2,19 +2,19 @@
 {% block content %}
 <h1>Calendar</h1>
 <a href="/calendar/new" class="btn btn-primary mr-2">New event</a>
-<form method="POST">
+<form method="GET">
   {% csrf_token %}
   <div class="form-row">
     <div class="col">
       <div class="form-group">
         <label>Start Interval</label>
-        <input class="form-control" name="ti-start" type="datetime-local">
+        <input class="form-control" name="ti-start" type="datetime-local" value="{{ str_start }}">
       </div>
     </div>
     <div class="col">
       <div class="form-group">
         <label>End Interval</label>
-        <input class="form-control" name="ti-end" type="datetime-local">
+        <input class="form-control" name="ti-end" type="datetime-local" value="{{ str_end }}">
       </div>
     </div>
     <div class="col">
@@ -27,7 +27,7 @@
 </form>
 <table class="table">
   <thead>
-    <tr>
+    <tr style="background-color:#a5a5a5">
       <th scope="col">Organizer</th>
       <th scope="col">Subject</th>
       <th scope="col">Start</th>
@@ -39,7 +39,7 @@
   <tbody>
     {% if events %}
       {% for event in events %}
-        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#ffffff{% else %}#b5b5b5{% endif %}">
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
           <td>{{ event.organizer.emailAddress.name }}</td>
           <td>{{ event.subject }}</td>
           <td>{{ event.start.dateTime|date:'d/n/Y g:i A' }}</td>
