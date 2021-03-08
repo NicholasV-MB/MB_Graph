@@ -149,6 +149,7 @@ def viewmap(request):
     context["str_start"] = context["start"].strftime('%H:%M %d/%m/%Y')
     context["str_end"] = context["end"].strftime('%H:%M %d/%m/%Y')
     events_min = []
+    errors = []
     if context["events"]:
         events = context["events"]
         for event in events:
@@ -163,7 +164,7 @@ def viewmap(request):
                 long = None
 
             if (lat==None or long==None):
-                print("Errore nel trovare le coordinate")
+                errors.append("Could not find Coordinates for location "+event["location"].get("displayName"))
                 continue
             text = event["subject"] + "<br>" + event["location"].get("displayName") + "<br>Duration: " + str(event["end"]["dateTime"]-event["start"]["dateTime"])
             event_min = {
@@ -180,20 +181,34 @@ def viewmap(request):
     routes = []
     remaining_evs = [e for e in events_min ]
     for ev in events_min:
-        routes.append(get_route(
+        route = get_route(
             MB_HEADQUARTER_LATITUDE,
             MB_HEADQUARTER_LONGITUDE,
             ev["latitude"],
             ev["longitude"]
-        ))
+        )
+        if(route!=None):
+            route["text"] = "FROM: ModulBlok Headquarter<br>TO: "+\
+                ev["text"].split("<br>")[1]+"<br>"+route["text"]
+            routes.append(route)
+        else:
+            errors.append("Could not find route from ModulBlok Headquarter to latitude:"+ev["latitude"]+" longitude:"+ev["longitude"])
         remaining_evs.remove(ev)
         for r_ev in remaining_evs:
-            routes.append(get_route(
+            route = get_route(
                 ev["latitude"],
                 ev["longitude"],
                 r_ev["latitude"],
                 r_ev["longitude"]
-            ))
+            )
+
+            if(route!=None):
+                route["text"] = "FROM: "+ev["text"].split("<br>")[1] +"<br>TO: "+\
+                    r_ev["text"].split("<br>")[1] + "<br>"+route["text"]
+                routes.append(route)
+            else:
+                errors.append("Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"])
 
     context["routes"] = routes
+    context["maps_errors"] = errors
     return render(request, 'map.html', context)

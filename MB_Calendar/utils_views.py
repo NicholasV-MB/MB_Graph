@@ -106,8 +106,6 @@ def initialize_context(request):
 
 def get_lat_long_from_location(address):
     r = requests.get('{0}?q={1}&format=jsonv2'.format(nominatim_base_url, address))
-    print(r)
-    print(r.url)
     json_resp = r.json()
     if len(json_resp)>0:
         json_resp = json_resp[0]
@@ -127,11 +125,14 @@ def get_route(lat1, long1, lat2, long2):
         long2,
         lat2))
     r_json = r.json()
-    text = str(round(r_json["routes"][0]["distance"]/1000, 2)) + " KM<br>"+ \
-        str(round(r_json["routes"][0]["duration"]/3600, 2))+" Hours"
-    geometry = r_json["routes"][0]["geometry"]
-    resp = {
-        "text": text,
-        "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\")
-    }
+    if len(r_json)>0:
+        text = str(round(r_json["routes"][0]["distance"]/1000, 2)) + " KM<br>"+ \
+            str(round(r_json["routes"][0]["duration"]/3600, 2))+" Hours"
+        geometry = r_json["routes"][0]["geometry"]
+        resp = {
+            "text": text,
+            "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\")
+        }
+    else:
+        resp = None
     return resp
