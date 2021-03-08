@@ -7,6 +7,7 @@ import requests
 import json
 
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
+osrm_base_url = "http://router.project-osrm.org/route/v1/car"
 
 def get_events_context_from_request(request):
     context = initialize_context(request)
@@ -105,7 +106,32 @@ def initialize_context(request):
 
 def get_lat_long_from_location(address):
     r = requests.get('{0}?q={1}&format=jsonv2'.format(nominatim_base_url, address))
-    json_resp = r.json()[0]
-    lat = json_resp.get("lat")
-    long = json_resp.get("lon")
+    print(r)
+    print(r.url)
+    json_resp = r.json()
+    if len(json_resp)>0:
+        json_resp = json_resp[0]
+        lat = json_resp.get("lat")
+        long = json_resp.get("lon")
+    else:
+        lat = None
+        long = None
     return lat, long
+
+
+def get_route(lat1, long1, lat2, long2):
+    r = requests.get('{0}/{1},{2};{3},{4}?overview=full'.format(
+        osrm_base_url,
+        long1,
+        lat1,
+        long2,
+        lat2))
+    r_json = r.json()
+    text = str(round(r_json["routes"][0]["distance"]/1000, 2)) + " KM<br>"+ \
+        str(round(r_json["routes"][0]["duration"]/3600, 2))+" Hours"
+    geometry = r_json["routes"][0]["geometry"]
+    resp = {
+        "text": text,
+        "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\")
+    }
+    return resp

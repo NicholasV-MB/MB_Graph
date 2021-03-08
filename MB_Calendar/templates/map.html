@@ -1,79 +1,161 @@
 {% extends "layout.html" %}
 {% block content %}
+{% load static %}
 
-<script src="http://www.openlayers.org/api/OpenLayers.js"></script>
-
+<!--<script src="http://www.ol.org/api/ol.js"></script>-->
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
 <span style="font-family: Arial; font-weight: bold;">Locations of events from {{ str_start }} to {{ str_end }}</span>
 <div style="width:100%; height:100px" id="map"></div>
+<div id="popup" style="background-color: #FFFFFF;  padding: 10px; border-radius: 15px; border: 2px solid green;"></div>
 <script type="text/javascript">
   document.getElementById("map").style.height = window.innerHeight-100+"px"
 // Posizione iniziale della mappa
-    var lat=46.117620;
-    var lon=13.194870;
+    var lat="{{ headquarter.latitude }}";
+    var lon="{{ headquarter.longitude }}";
     var zoom=6;
     var all_markers = [];
-
-    map = new OpenLayers.Map ("map", {
-      controls:[
-         new OpenLayers.Control.Navigation(),
-         new OpenLayers.Control.PanZoomBar(),
-         new OpenLayers.Control.ScaleLine(),
-         new OpenLayers.Control.Permalink('permalink'),
-         new OpenLayers.Control.MousePosition(),
-         new OpenLayers.Control.Attribution()
-	      ],
-      projection: new OpenLayers.Projection("EPSG:900913"),
-      displayProjection: new OpenLayers.Projection("EPSG:4326")
-      } );
-
-		var mapnik = new OpenLayers.Layer.OSM("OpenStreetMap (Mapnik)");
-
-		map.addLayer(mapnik);
+    var all_routes = [];
 
 
-
-    var LayerMarkers = new OpenLayers.Layer.Markers( "Markers" );
-    map.addLayer(LayerMarkers);
     var MB_marker = make_marker("Modulblok Headquarter<br>Via Vanelis, 6, Pagnacco (UD)", lat, lon)
     all_markers.push(MB_marker);
 
+    {% if events %}
+      {% for event in events %}
+        var repl1 = "{{event.text}}".replace(/&lt;/g, "<")
+        var text = repl1.replace(/&gt;/g, ">")
+        var marker = make_marker(text, "{{event.latitude}}", "{{event.longitude}}");
+        all_markers.push(marker);
+      {% endfor %}
+    {% endif %}
 
-    var center = new OpenLayers.LonLat( 12.388889, 43.112221 ).transform(
-      new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
-      map.getProjectionObject() // to Spherical Mercator Projection
-    );
-		map.setCenter (center, zoom);
+    var markersSource = new ol.source.Vector({
+      features: all_markers,
+    });
+
+    var icon = new ol.style.Icon({
+      anchor: [0.5, 46],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: "{% static 'marker.png' %}"
+    });
+    var markersStyle = new ol.style.Style({
+       image: icon
+     });
+    var markersLayer = new ol.layer.Vector({
+      source: markersSource,
+      style: markersStyle
+    });
 
 
+    var routesStyle =  new ol.style.Style({
+         stroke: new ol.style.Stroke({
+           width: 6,
+          color: [0, 0, 255, 0.8]
+         })
+     })
 
-  {% if events %}
-    {% for event in events %}
-      var repl1 = "{{event.text}}".replace(/&lt;/g, "<")
-      var text = repl1.replace(/&gt;/g, ">")
-      var marker = make_marker(text, "{{event.latitude}}", "{{event.longitude}}");
-      all_markers.push(marker);
-    {% endfor %}
-  {% endif %}
+    {% if routes %}
+      {% for route in routes %}
+          var geometry = "{{route.geometry }}";
+          var repl1 = "{{route.text}}".replace(/&lt;/g, "<")
+          var text = repl1.replace(/&gt;/g, ">")
+          var route = make_route(text, geometry);
+          all_routes.push(route);
+      {% endfor %}
+    {% endif %}
 
+
+    var routesSource = new ol.source.Vector({
+      features: all_routes,
+    });
+    var routesLayer = new ol.layer.Vector({
+      source: routesSource //,
+      //style: routesStyle
+    });
+
+
+    //doc
+    map = new ol.Map ( {
+      target: 'map',
+      layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          }),
+          markersLayer,
+          routesLayer
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([ 12.388889,  43.112221 ]),
+          zoom: zoom
+        })
+      });
+
+
+    //document.getElementsByClassName("ol-overlaycontainer-stopevent")[0].style.display="none"
 
   function make_marker(text, latitude, longitude){
-    var lonLat = new OpenLayers.LonLat( longitude, latitude ).transform(
-      new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
-      map.getProjectionObject() // to Spherical Mercator Projection
-    );
-    var marker = new OpenLayers.Marker(lonLat)
-    LayerMarkers.addMarker(marker);
-    marker.events.register('mouseover', marker, function(evt) {
-      popup = new OpenLayers.Popup.FramedCloud("Popup",
-          this.lonlat,
-          null,
-          "<div>"+text+"</div>",
-          null,
-          false);
-      map.addPopup(popup);
-  });
-  marker.events.register('mouseout', marker, function(evt) {popup.hide();});
-  return marker;
-  }
+    var marker = new ol.Feature({
+      geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude])),
+      name: text,
+    });
+    return marker;
+   }
+
+   function make_route(text, geometry){
+     var route = new ol.format.Polyline({
+       factor: 1e5
+     }).readGeometry(geometry, {
+       dataProjection: 'EPSG:4326',
+       featureProjection: 'EPSG:3857'
+     });
+     var my_style = new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            width: 6,
+           color: [
+            Math.floor(Math.random() * 55),
+            Math.floor(Math.random() * 55),
+            Math.floor(Math.random() * 155)+100,
+            Math.floor(Math.random() * 0.5)+0.5]
+          })
+      })
+     var feature = new ol.Feature({
+       type: 'route',
+       geometry: route,
+       name: text
+     });
+     feature.setStyle(my_style);
+     return feature;
+   }
+   var popup = document.getElementById("popup");
+   var popupOverlay = new ol.Overlay({
+          element: popup,
+          offset: [9, 9]
+      });
+
+    map.addOverlay(popupOverlay);
+    map.on('pointermove', (event) => {
+          var show = false;
+          map.forEachFeatureAtPixel(event.pixel,
+              (feature, layer) => {
+                  popup.innerHTML = feature.values_.name;
+                  popup.hidden = false;
+                  popupOverlay.setPosition(event.coordinate);
+                  show = true;
+              },
+              { layerFilter: (layer) => {
+                  return (layer.type === new ol.layer.Vector().type) ? true : false;
+              }, hitTolerance: 6 }
+          );
+          if (show==false) {
+              popup.innerHTML = '';
+              popup.hidden = true;
+          }
+      });
+
+      map.once('postrender', function(event) {
+        document.getElementsByClassName("ol-attribution ol-unselectable ol-control ol-uncollapsible")[0].style.display="none"
+      });
+
 </script>
 {% endblock %}

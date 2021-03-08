@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from MB_Calendar.auth_helper import get_sign_in_flow, get_token_from_code, store_user, remove_user_and_token, get_token
 from MB_Calendar.graph_helper import *
 from MB_Calendar.utils_views import *
+from  MB_Calendar.common_utils import MB_HEADQUARTER_LATITUDE, MB_HEADQUARTER_LONGITUDE
 
 def home(request):
   context = initialize_context(request)
@@ -101,9 +102,9 @@ def editevent(request, id):
   context['event']['attendees_list'] = attendees
   context['event']["start"]["dateTime"] = event["start"]["dateTime"].split(".")[0]
   context['event']["end"]["dateTime"] = event["end"]["dateTime"].split(".")[0]
-  str_after = event["body"]["content"].split("<div class=\"PlainText\">")[1]
-
-  context['event']["str_body"] = str_after.split("</div>")[0]
+  str_after = event["body"]["content"].split("<div")[1]
+  str_after = str_after.split(">")[1]
+  context['event']["str_body"] = str_after.split("</div")[0]
 
   if request.POST:
       # Validate the form values
@@ -158,8 +159,12 @@ def viewmap(request):
             elif event["location"].get("displayName"):
                 lat, long = get_lat_long_from_location(event["location"].get("displayName"))
             else:
-                continue
+                lat = None
+                long = None
 
+            if (lat==None or long==None):
+                print("Errore nel trovare le coordinate")
+                continue
             text = event["subject"] + "<br>" + event["location"].get("displayName") + "<br>Duration: " + str(event["end"]["dateTime"]-event["start"]["dateTime"])
             event_min = {
                 "text": text,
@@ -168,4 +173,27 @@ def viewmap(request):
             }
             events_min.append(event_min)
     context["events"] = events_min
+    context["headquarter"] = {
+        "latitude": MB_HEADQUARTER_LATITUDE,
+        "longitude": MB_HEADQUARTER_LONGITUDE
+    }
+    routes = []
+    remaining_evs = [e for e in events_min ]
+    for ev in events_min:
+        routes.append(get_route(
+            MB_HEADQUARTER_LATITUDE,
+            MB_HEADQUARTER_LONGITUDE,
+            ev["latitude"],
+            ev["longitude"]
+        ))
+        remaining_evs.remove(ev)
+        for r_ev in remaining_evs:
+            routes.append(get_route(
+                ev["latitude"],
+                ev["longitude"],
+                r_ev["latitude"],
+                r_ev["longitude"]
+            ))
+
+    context["routes"] = routes
     return render(request, 'map.html', context)
