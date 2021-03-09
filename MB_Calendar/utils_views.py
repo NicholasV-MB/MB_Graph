@@ -5,6 +5,7 @@ from MB_Calendar.auth_helper import *
 from MB_Calendar.graph_helper import get_calendar_events
 import requests
 import json
+import itertools
 
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
 osrm_base_url = "http://router.project-osrm.org/route/v1/car"
@@ -126,13 +127,55 @@ def get_route(lat1, long1, lat2, long2):
         lat2))
     r_json = r.json()
     if len(r_json)>0:
-        text = str(round(r_json["routes"][0]["distance"]/1000, 2)) + " KM<br>"+ \
-            str(round(r_json["routes"][0]["duration"]/3600, 2))+" Hours"
+        duration = round(r_json["routes"][0]["duration"]/3600, 2)
+        distance = round(r_json["routes"][0]["distance"]/1000, 2)
+        text = str(distance) + " KM<br>"+ str(duration)+" Hours"
         geometry = r_json["routes"][0]["geometry"]
         resp = {
             "text": text,
-            "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\")
+            "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\"),
+            "duration": duration,
+            "distance": distance
         }
     else:
         resp = None
     return resp
+
+def find_best_dist_routes(routes, locations, start):
+    best_routes = []
+    permutations = itertools.permutations(locations)
+    list_permutated = list(permutations)
+    min_dist = float('inf')
+    for combo in list_permutated:
+        current_routes = []
+        route = find_right_route(routes, start, combo[0])
+        current_km = route["distance"]
+        current_routes.append(route)
+        idx = 1;
+        for from_loc in combo:
+            if len(combo)>idx:
+                to_loc = combo[idx]
+                idx += 1
+            else:
+                to_loc = start
+
+            route = find_right_route(routes, from_loc, to_loc)
+            current_routes.append(route)
+            km = route["distance"]
+            current_km += km
+
+        if current_km<min_dist:
+            min_route = current_km
+            best_routes = current_routes
+
+    return best_routes
+
+
+def find_right_route(routes, from_loc, to_loc):
+    right_route = None
+    for r in routes:
+        if (r["from"] == from_loc and  r["to"] == to_loc) or \
+            (r["to"] == from_loc and  r["from"] == to_loc):
+            right_route = r
+
+    return right_route

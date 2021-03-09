@@ -2,19 +2,105 @@
 
 {% block content %}
 {% load static %}
+<style>
+  .show-all {
+    top: 10px;
+    right: .5em;
+    font-size:14px;
+  }
+  .show-all button{
+    width:250px;
+  }
+  .show-best-dist {
+    top:40px;
+    right: .5em;
+    font-size:14px;
+  }
+  .show-best-dist button{
+    width:250px;
+  }
+
+</style>
 <div id="popup_to_move" style="background-color: #FFFFFF;  padding: 10px; border-radius: 15px; border: 2px solid green;"></div>
 
 <!--<script src="http://www.ol.org/api/ol.js"></script>-->
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
-<span style="font-family: Arial; font-weight: bold;">Locations of events from {{ str_start }} to {{ str_end }}</span>
-<div style="width:100%; height:100px" id="map"></div>
+<span style="font-family: Arial; font-size: 22px; font-weight: bold;">Locations of events from {{ str_start }} to {{ str_end }}</span>
+<div style="width:100%; height:10px" id="map"></div>
 <script type="text/javascript">
-  document.getElementById("map").style.height = window.innerHeight-100+"px"
+  document.getElementById("map").style.height = window.innerHeight-150+"px"
   {% if maps_errors %}
     {% for err in maps_errors %}
       alert("{{err}}");
     {% endfor %}
   {% endif %}
+
+  var ShowAllRoutesControl = /*@__PURE__*/(function (Control) {
+    function ShowAllRoutesControl(opt_options) {
+      var options = opt_options || {};
+
+      var button = document.createElement('button');
+      button.innerHTML = 'Show All Routes';
+
+      var element = document.createElement('div');
+      element.className = 'show-all ol-unselectable ol-control';
+      element.appendChild(button);
+
+      Control.call(this, {
+        element: element,
+        target: options.target,
+      });
+      button.addEventListener('click', this.handleShowAllRoutes.bind(this), false);
+    }
+    if ( Control ) ShowAllRoutesControl.__proto__ = Control;
+    ShowAllRoutesControl.prototype = Object.create( Control && Control.prototype );
+    ShowAllRoutesControl.prototype.constructor = ShowBestDistRoutesControl;
+
+    ShowAllRoutesControl.prototype.handleShowAllRoutes = function handleShowAllRoutes () {
+      this.getMap().removeLayer(markersLayer);
+      if(this.getMap().getLayers().array_.length>1){
+          this.getMap().removeLayer(this.getMap().getLayers().array_[1]);
+      }
+      this.getMap().addLayer(routesLayer);
+      this.getMap().addLayer(markersLayer);
+    };
+
+    return ShowAllRoutesControl;
+  }(ol.control.Control));
+
+  var ShowBestDistRoutesControl = /*@__PURE__*/(function (Control) {
+    function ShowBestDistRoutesControl(opt_options) {
+      var options = opt_options || {};
+
+      var button = document.createElement('button');
+      button.innerHTML = 'Show Min Distance Routes';
+
+      var element = document.createElement('div');
+      element.className = 'show-best-dist ol-unselectable ol-control';
+      element.appendChild(button);
+
+      Control.call(this, {
+        element: element,
+        target: options.target,
+      });
+      button.addEventListener('click', this.handleShowBestDistRoutes.bind(this), false);
+    }
+    if ( Control ) ShowBestDistRoutesControl.__proto__ = Control;
+    ShowBestDistRoutesControl.prototype = Object.create( Control && Control.prototype );
+    ShowBestDistRoutesControl.prototype.constructor = ShowBestDistRoutesControl;
+
+    ShowBestDistRoutesControl.prototype.handleShowBestDistRoutes = function handleShowBestDistRoutes () {
+      this.getMap().removeLayer(markersLayer);
+      if(this.getMap().getLayers().array_.length>1){
+          this.getMap().removeLayer(this.getMap().getLayers().array_[1]);
+      }
+      this.getMap().addLayer(bestDistRoutesLayer);
+      this.getMap().addLayer(markersLayer);
+    };
+
+    return ShowBestDistRoutesControl;
+  }(ol.control.Control));
+
 
 // Posizione iniziale della mappa
     var lat="{{ headquarter.latitude }}";
@@ -22,6 +108,7 @@
     var zoom=6;
     var all_markers = [];
     var all_routes = [];
+    var all_best_dist_routes = [];
 
 
     var MB_marker = make_marker("Modulblok Headquarter<br>Via Vanelis, 6, Pagnacco (UD)", lat, lon)
@@ -80,15 +167,35 @@
       source: routesSource
     });
 
+    {% if best_dist_routes %}
+      {% for b_route in best_dist_routes %}
+          var geometry = "{{b_route.geometry }}";
+          var repl1 = "{{b_route.text}}".replace(/&lt;/g, "<")
+          var text = repl1.replace(/&gt;/g, ">")
+          var route = make_route(text, geometry);
+          all_best_dist_routes.push(route);
+      {% endfor %}
+    {% endif %}
+
+
+    var bestDistRoutesSource = new ol.source.Vector({
+      features: all_best_dist_routes,
+    });
+    var bestDistRoutesLayer = new ol.layer.Vector({
+      source: bestDistRoutesSource
+    });
+
 
     //doc
     map = new ol.Map ( {
       target: 'map',
+      controls: ol.control.defaults().extend([
+          new ShowBestDistRoutesControl(),
+          new ShowAllRoutesControl()]),
       layers: [
           new ol.layer.Tile({
             source: new ol.source.OSM()
           }),
-          routesLayer,
           markersLayer
         ],
         view: new ol.View({
@@ -141,23 +248,25 @@
 
     map.addOverlay(popupOverlay);
     map.on('pointermove', (event) => {
-          var show = false;
           var texts = [];
+          var max_length = 0;
           map.forEachFeatureAtPixel(event.pixel,
               (feature, layer) => {
-                  /*popup.innerHTML = feature.values_.name;
-                  popup.hidden = false;
-                  popupOverlay.setPosition(event.coordinate);
-                  show = true;*/
                   popupOverlay.setPosition(event.coordinate);
                   texts.push(feature.values_.name);
+                  var strings = feature.values_.name.split("<br>");
+                  strings.forEach(s =>{
+                    if(s.length>max_length){
+                      max_length=s.length;
+                    }
+                  });
               },
               { layerFilter: (layer) => {
                   return (layer.type === new ol.layer.Vector().type) ? true : false;
               }, hitTolerance: 6 }
           );
           if (texts.length>0) {
-            popup.innerHTML = texts.join("<br>-----------------------<br>");
+            popup.innerHTML = texts.join("<br>"+Array(Math.floor(max_length/3)).join('~&middot;~')+"<br>");
             popup.hidden = false;
           } else{
             popup.innerHTML = '';
@@ -168,6 +277,8 @@
       map.once('postrender', function(event) {
         document.getElementsByClassName("ol-attribution ol-unselectable ol-control ol-uncollapsible")[0].style.display="none"
       });
+
+
 
 </script>
 {% endblock %}

@@ -180,6 +180,7 @@ def viewmap(request):
     }
     routes = []
     remaining_evs = [e for e in events_min ]
+    event_locations = [e["text"].split("<br>")[1] for e in events_min ]
     for ev in events_min:
         route = get_route(
             MB_HEADQUARTER_LATITUDE,
@@ -188,8 +189,11 @@ def viewmap(request):
             ev["longitude"]
         )
         if(route!=None):
-            route["text"] = "FROM: ModulBlok Headquarter<br>TO: "+\
-                ev["text"].split("<br>")[1]+"<br>"+route["text"]
+            f = "ModulBlok Headquarter"
+            to = ev["text"].split("<br>")[1]
+            route["text"] = "-> "+f+"<br>-> "+to+"<br>"+route["text"]
+            route["from"] = f
+            route["to"] = to
             routes.append(route)
         else:
             errors.append("Could not find route from ModulBlok Headquarter to latitude:"+ev["latitude"]+" longitude:"+ev["longitude"])
@@ -203,12 +207,17 @@ def viewmap(request):
             )
 
             if(route!=None):
-                route["text"] = "FROM: "+ev["text"].split("<br>")[1] +"<br>TO: "+\
-                    r_ev["text"].split("<br>")[1] + "<br>"+route["text"]
+                f = ev["text"].split("<br>")[1]
+                to = r_ev["text"].split("<br>")[1]
+                route["text"] = "-> "+f +"<br>-> "+to+ "<br>"+route["text"]
+                route["from"] = f
+                route["to"] = to
                 routes.append(route)
             else:
                 errors.append("Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"])
 
+    best_dist_routes = find_best_dist_routes(routes, event_locations, "ModulBlok Headquarter")
     context["routes"] = routes
+    context["best_dist_routes"] = best_dist_routes
     context["maps_errors"] = errors
     return render(request, 'map.html', context)
