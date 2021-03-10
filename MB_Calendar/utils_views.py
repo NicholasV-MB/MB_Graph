@@ -119,14 +119,15 @@ def get_lat_long_from_location(address):
 
 
 def get_route(lat1, long1, lat2, long2):
-    r = requests.get('{0}/{1},{2};{3},{4}?overview=full'.format(
+    url = '{0}/{1},{2};{3},{4}?overview=full'.format(
         osrm_base_url,
         long1,
         lat1,
         long2,
-        lat2))
-    r_json = r.json()
-    if len(r_json)>0:
+        lat2)
+    r = requests.get(url)
+    if str(r.status_code)=="200":
+        r_json = r.json()
         duration = round(r_json["routes"][0]["duration"]/3600, 2)
         distance = round(r_json["routes"][0]["distance"]/1000, 2)
         text = str(distance) + " KM<br>"+ str(duration)+" Hours"
@@ -141,34 +142,50 @@ def get_route(lat1, long1, lat2, long2):
         resp = None
     return resp
 
-def find_best_dist_routes(routes, locations, start):
-    best_routes = []
-    permutations = itertools.permutations(locations)
+def find_best_routes(routes, events, start):
+    best_dist_routes = []
+    best_time_routes = []
+    permutations = itertools.permutations(events)
     list_permutated = list(permutations)
     min_dist = float('inf')
+    min_time = float('inf')
     for combo in list_permutated:
         current_routes = []
-        route = find_right_route(routes, start, combo[0])
+        route = find_right_route(routes, start, combo[0]["location"])
+        current_time = route["duration"] + combo[0]["duration"]
         current_km = route["distance"]
         current_routes.append(route)
         idx = 1;
-        for from_loc in combo:
+        for ev in combo:
+            from_loc = ev["location"]
             if len(combo)>idx:
-                to_loc = combo[idx]
+                to_loc = combo[idx]["location"]
+                ev_duration = combo[idx]["duration"]
                 idx += 1
             else:
                 to_loc = start
+                ev_duration = 0
 
             route = find_right_route(routes, from_loc, to_loc)
             current_routes.append(route)
             km = route["distance"]
             current_km += km
+            h = route["duration"]
+            current_time += h
+            current_time += ev_duration
 
         if current_km<min_dist:
             min_route = current_km
-            best_routes = current_routes
+            best_dist_routes = current_routes
 
-    return best_routes
+        if current_time<min_time:
+            min_time = current_time
+            best_time_routes = current_routes
+
+
+    best_dist_routes = order_routes(best_dist_routes)
+    best_time_routes = order_routes(best_time_routes)
+    return best_dist_routes, best_time_routes
 
 
 def find_right_route(routes, from_loc, to_loc):
@@ -179,3 +196,107 @@ def find_right_route(routes, from_loc, to_loc):
             right_route = r
 
     return right_route
+
+def order_routes(routes):
+    idx = 1
+    for r in routes:
+        actual_to = r["to"]
+        if len(routes)>idx:
+            next_from = routes[idx]["from"]
+            if actual_to != next_from:
+                next_to = routes[idx]["to"]
+                new_route = {
+                    "from": next_to,
+                    "to": next_from,
+                    "text": routes[idx]["text"],
+                    "geometry": routes[idx]["geometry"],
+                    "duration": routes[idx]["duration"],
+                    "distance": routes[idx]["distance"]
+                }
+                routes[idx] = new_route
+            idx += 1
+    return routes
+
+def find_planner(routes, events):
+    planner = {
+        "1": []
+    }
+    idx = 0
+    total_time = 0
+    day = 1
+    current_time = 0
+    for event in events:
+        route = routes[idx]
+        current_time += route["duration"]
+        if current_time<10:
+            current_time += event["duration"]
+            planner[str(day)].append(route)
+            if current_time<10:
+                planner[str(day)].append(event)
+            else:
+                current_time -= event["duration"]
+                time_free = 10-current_time
+                time_ev_left = event["duration"]-time_free
+                short_event = event.copy()
+                short_event["duration"] = time_free
+                planner[str(day)].append(short_event)
+                while (time_ev_left>8):
+                    day += 1
+                    planner[str(day)] = []
+                    new_ev = event.copy()
+                    new_ev["duration"] = 8
+                    time_ev_left = time_ev_left-8
+                    planner[str(day)].append(new_ev)
+
+                day +=1
+                planner[str(day)] = []
+                short_event = event.copy()
+                short_event["duration"] = time_ev_left
+                planner[str(day)].append(short_event)
+                current_time = time_ev_left
+        else:
+            current_time -= route["duration"]
+            time_free = 10-current_time
+            time_route_left = route["duration"]-time_free
+            short_route = route
+            short_route["duration"] = round(time_free, 2)
+            planner[str(day)].append(short_route)
+            while (time_route_left>8):
+                day +=1
+                planner[str(day)] = []
+                short_route = route
+                short_route["duration"] = 8
+                time_route_left = route["duration"]-time_free
+                planner[str(day)].append(short_route)
+
+            day +=1
+            planner[str(day)] = []
+            short_route = route
+            short_route["duration"] = time_route_left
+
+        idx += 1
+
+    planner[str(day)].append(routes[idx])
+
+    final_planner = []
+    for day in planner:
+        values = planner[day]
+        for val in values:
+            if val["text"].startswith("->"):
+                type = "Trip"
+                descr = val["from"] +" => "+val["to"]
+            else:
+                type = "Event"
+                descr = val["text"].split("<br>")[0]
+
+            duration = round(val["duration"], 2)
+
+            info = {
+                "day": day,
+                "type": type,
+                "description": descr,
+                "duration": duration,
+                "rowspan": len(values)
+            }
+            final_planner.append(info)
+    return final_planner

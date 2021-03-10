@@ -166,21 +166,42 @@ def viewmap(request):
             if (lat==None or long==None):
                 errors.append("Could not find Coordinates for location "+event["location"].get("displayName"))
                 continue
-            text = event["subject"] + "<br>" + event["location"].get("displayName") + "<br>Duration: " + str(event["end"]["dateTime"]-event["start"]["dateTime"])
+
+            days_int = event["end"]["dateTime"].day - event["start"]["dateTime"].day
+            if days_int>0:
+                end_d1 = event["start"]["dateTime"]
+                end_d1 = end_d1.replace(hour=18, minute=0)
+                h_d1 = end_d1-event["start"]["dateTime"]
+
+                start_ld = event["end"]["dateTime"]
+                start_ld = start_ld.replace(hour=9, minute=0)
+                h_ld = event["end"]["dateTime"]-start_ld
+
+                duration = (days_int-1)*8 + h_d1.seconds/3600 + h_ld.seconds/3600
+            else:
+                duration = (event["end"]["dateTime"]-event["start"]["dateTime"]).seconds/3600
+
+            duration = round(duration, 2)
+            text = event["subject"] + "<br>" + event["location"].get("displayName") + "<br>Duration: " + str(duration)+" Hours"
             event_min = {
+                "subject": event["subject"],
                 "text": text,
                 "latitude": lat,
-                "longitude": long
+                "longitude": long,
+                "duration": duration,
+                "location": event["location"].get("displayName")
             }
             events_min.append(event_min)
     context["events"] = events_min
+    context["events_info"]= {
+        "tot_duration": sum(ev["duration"] for ev in  events_min )
+    }
     context["headquarter"] = {
         "latitude": MB_HEADQUARTER_LATITUDE,
         "longitude": MB_HEADQUARTER_LONGITUDE
     }
     routes = []
     remaining_evs = [e for e in events_min ]
-    event_locations = [e["text"].split("<br>")[1] for e in events_min ]
     for ev in events_min:
         route = get_route(
             MB_HEADQUARTER_LATITUDE,
@@ -216,8 +237,29 @@ def viewmap(request):
             else:
                 errors.append("Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"])
 
-    best_dist_routes = find_best_dist_routes(routes, event_locations, "ModulBlok Headquarter")
-    context["routes"] = routes
+
+    context["routes"] = [r for r in routes]
+    best_dist_routes, best_time_routes = find_best_routes(routes, events_min, "ModulBlok Headquarter")
     context["best_dist_routes"] = best_dist_routes
+    tot_duration_bd = sum(d_route["duration"] for d_route in  best_dist_routes )
+    tot_distance_bd = sum(d_route["distance"] for d_route in  best_dist_routes )
+    context["best_dist_routes_info"] = {
+        "tot_duration": round(tot_duration_bd, 2),
+        "tot_distance": round(tot_distance_bd, 2)
+    }
+    context["best_time_routes"] = best_time_routes
+    tot_duration_bt = sum(t_route["duration"] for t_route in  best_time_routes )
+    tot_distance_bt = sum(t_route["distance"] for t_route in  best_time_routes )
+    context["best_time_routes_info"] = {
+        "tot_duration": round(tot_duration_bt, 2),
+        "tot_distance": round(tot_distance_bt, 2)
+    }
     context["maps_errors"] = errors
+
+    planner = find_planner(best_time_routes, events_min)
+    context["planner"] = planner
+    context["planner_info"]= {
+        "tot_duration": sum(el["duration"] for el in  planner )
+    }
+
     return render(request, 'map.html', context)

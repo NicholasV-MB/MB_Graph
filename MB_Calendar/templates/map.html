@@ -20,6 +20,22 @@
     width:250px;
   }
 
+  .show-best-time {
+    top:70px;
+    right: .5em;
+    font-size:14px;
+  }
+  .show-best-time button{
+    width:250px;
+  }
+
+  .table thead th {
+    vertical-align: middle;
+  }
+  .table tbody td {
+    vertical-align: middle;
+  }
+
 </style>
 <div id="popup_to_move" style="background-color: #FFFFFF;  padding: 10px; border-radius: 15px; border: 2px solid green;"></div>
 
@@ -101,6 +117,39 @@
     return ShowBestDistRoutesControl;
   }(ol.control.Control));
 
+  var ShowBestTimeRoutesControl = /*@__PURE__*/(function (Control) {
+    function ShowBestTimeRoutesControl(opt_options) {
+      var options = opt_options || {};
+
+      var button = document.createElement('button');
+      button.innerHTML = 'Show Min Time Routes';
+
+      var element = document.createElement('div');
+      element.className = 'show-best-time ol-unselectable ol-control';
+      element.appendChild(button);
+
+      Control.call(this, {
+        element: element,
+        target: options.target,
+      });
+      button.addEventListener('click', this.handleShowBestTimeRoutes.bind(this), false);
+    }
+    if ( Control ) ShowBestTimeRoutesControl.__proto__ = Control;
+    ShowBestTimeRoutesControl.prototype = Object.create( Control && Control.prototype );
+    ShowBestTimeRoutesControl.prototype.constructor = ShowBestTimeRoutesControl;
+
+    ShowBestTimeRoutesControl.prototype.handleShowBestTimeRoutes = function handleShowBestTimeRoutes () {
+      this.getMap().removeLayer(markersLayer);
+      if(this.getMap().getLayers().array_.length>1){
+          this.getMap().removeLayer(this.getMap().getLayers().array_[1]);
+      }
+      this.getMap().addLayer(bestTimeRoutesLayer);
+      this.getMap().addLayer(markersLayer);
+    };
+
+    return ShowBestTimeRoutesControl;
+  }(ol.control.Control));
+
 
 // Posizione iniziale della mappa
     var lat="{{ headquarter.latitude }}";
@@ -109,6 +158,7 @@
     var all_markers = [];
     var all_routes = [];
     var all_best_dist_routes = [];
+    var all_best_time_routes = [];
 
 
     var MB_marker = make_marker("Modulblok Headquarter<br>Via Vanelis, 6, Pagnacco (UD)", lat, lon)
@@ -186,12 +236,32 @@
     });
 
 
+    {% if best_time_routes %}
+      {% for t_route in best_time_routes %}
+          var geometry = "{{t_route.geometry }}";
+          var repl1 = "{{t_route.text}}".replace(/&lt;/g, "<")
+          var text = repl1.replace(/&gt;/g, ">")
+          var route = make_route(text, geometry);
+          all_best_time_routes.push(route);
+      {% endfor %}
+    {% endif %}
+
+
+    var bestTimeRoutesSource = new ol.source.Vector({
+      features: all_best_time_routes,
+    });
+    var bestTimeRoutesLayer = new ol.layer.Vector({
+      source: bestTimeRoutesSource
+    });
+
+
     //doc
     map = new ol.Map ( {
       target: 'map',
       controls: ol.control.defaults().extend([
           new ShowBestDistRoutesControl(),
-          new ShowAllRoutesControl()]),
+          new ShowAllRoutesControl(),
+          new ShowBestTimeRoutesControl()]),
       layers: [
           new ol.layer.Tile({
             source: new ol.source.OSM()
@@ -281,4 +351,177 @@
 
 
 </script>
+<br><br><br>
+<center><font size=6>All Events</font></center><br>
+<table class="table">
+  <thead>
+    <tr style="background-color:#a5a5a5">
+      <th scope="col">Subject</th>
+      <th scope="col">Duration (Hours)</th>
+      <th scope="col">Location</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if events %}
+      {% for event in events %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+          <td>{{ event.subject }}</td>
+          <td>{{ event.location }}</td>
+          <td>{{ event.duration }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+  <tfoot>
+    {% if events %}
+      <tr style="background-color:#a5a5a5">
+        <td colspan=2><b>TOTAL</b></td>
+        <td><b>{{events_info.tot_duration}}</b></td>
+      </tr>
+      {% endif %}
+  </tfoot>
+</table>
+
+<br><br><br>
+<center><font size=6>All Routes</font></center><br>
+<table class="table">
+  <thead>
+    <tr style="background-color:#a5a5a5">
+      <th scope="col">From</th>
+      <th scope="col">To</th>
+      <th scope="col">Duration (Hours)</th>
+      <th scope="col">Distance (Kilometers)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if routes %}
+      {% for route in routes %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+          <td>{{ route.from }}</td>
+          <td>{{ route.to }}</td>
+          <td>{{ route.duration }}</td>
+          <td>{{ route.distance }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+
+<br><br><br>
+<center><font size=6>Best Path With Mininum Distance</font></center><br>
+<table class="table">
+  <thead>
+    <tr style="background-color:#a5a5a5">
+      <th scope="col">From</th>
+      <th scope="col">To</th>
+      <th scope="col">Duration (Hours)</th>
+      <th scope="col">Distance (Kilometers)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if best_dist_routes %}
+      {% for d_route in best_dist_routes %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+          <td>{{ d_route.from }}</td>
+          <td>{{ d_route.to }}</td>
+          <td>{{ d_route.duration }}</td>
+          <td>{{ d_route.distance }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+  <tfoot>
+    {% if best_dist_routes_info %}
+      <tr style="background-color:#a5a5a5">
+        <td colspan=2><b>TOTAL</b></td>
+        <td><b>{{best_dist_routes_info.tot_duration}}</b></td>
+        <td><b>{{best_dist_routes_info.tot_distance}}</b></td>
+      </tr>
+      {% endif %}
+  </tfoot>
+</table>
+
+<br><br><br>
+<center><font size=6>Best Path With Mininum Time</font></center><br>
+<table class="table">
+  <thead>
+    <tr style="background-color:#a5a5a5">
+      <th scope="col">From</th>
+      <th scope="col">To</th>
+      <th scope="col">Duration (Hours)</th>
+      <th scope="col">Distance (Kilometers)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if best_time_routes %}
+      {% for t_route in best_time_routes %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+          <td>{{ t_route.from }}</td>
+          <td>{{ t_route.to }}</td>
+          <td>{{ t_route.duration }}</td>
+          <td>{{ t_route.distance }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+  <tfoot>
+    {% if best_time_routes_info %}
+      <tr style="background-color:#a5a5a5">
+        <td colspan=2><b>TOTAL</b></td>
+        <td><b>{{best_time_routes_info.tot_duration}}</b></td>
+        <td><b>{{best_time_routes_info.tot_distance}}</b></td>
+      </tr>
+      {% endif %}
+  </tfoot>
+</table>
+
+<br><br><br>
+<center><font size=6>Planner With Minumum Time</font></center><br>
+<table class="table">
+  <thead>
+    <tr style="background-color:#a5a5a5">
+      <th scope="col">Day</th>
+      <th scope="col">Type</th>
+      <th scope="col">Desription</th>
+      <th scope="col">Duration (Hours)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% load custom_template_tags %}
+    {% setvar "0" as day %}
+    {% if planner %}
+      {% for mission in planner %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+          {% ifnotequal mission.day day %}
+
+            <td rowspan="{{ mission.rowspan }}" style="border: 3px solid;background-color:#c7c7c7;">
+                <b>{{ mission.day }}</b>
+            </td>
+            {% setvar mission.day as day %}
+            <td style="border-top: 3px solid;"><b>{{ mission.type }}</b></td>
+            <td style="border-top: 3px solid;">{{ mission.description }}</td>
+            <td style="border-top: 3px solid; border-right: 3px solid;">{{ mission.duration }}</td>
+          {% else %}
+            <td><b>{{ mission.type }}</b></td>
+            <td>{{ mission.description }}</td>
+            <td style="border-right: 3px solid;">{{ mission.duration }}</td>
+
+          {% endifnotequal %}
+
+
+
+        </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+  <tfoot>
+    {% if planner_info %}
+      <tr style="background-color:#a5a5a5; border-top: 3px solid;">
+        <td colspan=3><b>TOTAL</b></td>
+        <td><b>{{planner_info.tot_duration}}</b></td>
+      </tr>
+      {% endif %}
+  </tfoot>
+</table>
+
 {% endblock %}
