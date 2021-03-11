@@ -42,7 +42,7 @@ def get_sign_in_flow():
 def get_token_from_code(request):
   cache = load_cache(request)
   auth_app = get_msal_app(cache)
-
+  
   # Get the flow saved in session
   flow = request.session.pop('auth_flow', {})
 

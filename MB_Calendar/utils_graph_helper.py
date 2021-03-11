@@ -143,6 +143,9 @@ zone_mappings = {
 }
 
 def get_iana_from_windows(windows_tz_name):
+  """
+  Method to get IANA data
+  """
   if windows_tz_name in zone_mappings:
     return zone_mappings[windows_tz_name]
   else:

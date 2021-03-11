@@ -7,10 +7,15 @@ import requests
 import json
 import itertools
 
+# BASE URLS
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
 osrm_base_url = "http://router.project-osrm.org/route/v1/car"
 
 def get_events_context_from_request(request):
+    """
+    Extract events between dates in context or a months form now
+    @param: request
+    """
     context = initialize_context(request)
     user = context['user']
 
@@ -73,25 +78,14 @@ def get_events_context_from_request(request):
       for event in events['value']:
         event['start']['dateTime'] = parser.parse(event['start']['dateTime'])
         event['end']['dateTime'] = parser.parse(event['end']['dateTime'])
-        """
-        accesso alle coordinate fornite da graph
-        locations = event["locations"]
-        if len(locations) > 0 and locations[0].get("coordinates"):
-            location = locations[0]
-            latitude = str(location["coordinates"]["latitude"])
-            longitude = str(location["coordinates"]["longitude"])
-        else:
-            latitude = ""
-            longitude = ""
-        event['coordinates'] = {}
-        event['coordinates']['latitude'] = latitude
-        event['coordinates']['longitude'] = longitude
-        """
-
       context['events'] = events['value']
     return context
 
 def initialize_context(request):
+  """
+  Method for initialize contex, get errors and user authentication
+  @param: request
+  """
   context = {}
 
   # Check for any errors in the session
@@ -106,9 +100,14 @@ def initialize_context(request):
   return context
 
 def get_lat_long_from_location(address):
+    """
+    Request to Nominatim Latitude and Longitude from given address
+    @param address: string
+    @output Lat, Long: string
+    """
     r = requests.get('{0}?q={1}&format=jsonv2'.format(nominatim_base_url, address))
-    json_resp = r.json()
-    if len(json_resp)>0:
+    if str(r.status_code)=="200":
+        json_resp = r.json()
         json_resp = json_resp[0]
         lat = json_resp.get("lat")
         long = json_resp.get("lon")
@@ -119,6 +118,12 @@ def get_lat_long_from_location(address):
 
 
 def get_route(lat1, long1, lat2, long2):
+    """
+    Request to OSRM route from given points
+    @params lat1, long1: latitude and longitude of start point
+    @params lat2, long2: latitude and longitude of end point
+    @output route: dict
+    """
     url = '{0}/{1},{2};{3},{4}?overview=full'.format(
         osrm_base_url,
         long1,
@@ -143,6 +148,14 @@ def get_route(lat1, long1, lat2, long2):
     return resp
 
 def find_best_routes(routes, events, start):
+    """
+    Evalutate from all the routes the best paths for distance and duration
+    @param routes: list of dicts that represent all possible routes
+    @param events: list of dicts that represent all events to show
+    @param start: string with name of start point
+    @output best_dist_routes: list of dicts of routes which sum of distances is minumum
+    @output best_time_routes: list of dicts of routes which sum of duration is minumum
+    """
     best_dist_routes = []
     best_time_routes = []
     permutations = itertools.permutations(events)
@@ -151,36 +164,38 @@ def find_best_routes(routes, events, start):
     min_time = float('inf')
     for combo in list_permutated:
         current_routes = []
-        route = find_right_route(routes, start, combo[0]["location"])
-        current_time = route["duration"] + combo[0]["duration"]
-        current_km = route["distance"]
-        current_routes.append(route)
-        idx = 1;
-        for ev in combo:
-            from_loc = ev["location"]
-            if len(combo)>idx:
-                to_loc = combo[idx]["location"]
-                ev_duration = combo[idx]["duration"]
-                idx += 1
-            else:
-                to_loc = start
-                ev_duration = 0
-
-            route = find_right_route(routes, from_loc, to_loc)
+        if len(combo):
+            route = find_right_route(routes, start, combo[0]["location"])
+            current_time = route["duration"] + combo[0]["duration"]
+            current_km = route["distance"]
             current_routes.append(route)
-            km = route["distance"]
-            current_km += km
-            h = route["duration"]
-            current_time += h
-            current_time += ev_duration
+            idx = 1;
 
-        if current_km<min_dist:
-            min_route = current_km
-            best_dist_routes = current_routes
+            for ev in combo:
+                from_loc = ev["location"]
+                if len(combo)>idx:
+                    to_loc = combo[idx]["location"]
+                    ev_duration = combo[idx]["duration"]
+                    idx += 1
+                else:
+                    to_loc = start
+                    ev_duration = 0
 
-        if current_time<min_time:
-            min_time = current_time
-            best_time_routes = current_routes
+                route = find_right_route(routes, from_loc, to_loc)
+                current_routes.append(route)
+                km = route["distance"]
+                current_km += km
+                h = route["duration"]
+                current_time += h
+                current_time += ev_duration
+
+            if current_km<min_dist:
+                min_route = current_km
+                best_dist_routes = current_routes
+
+            if current_time<min_time:
+                min_time = current_time
+                best_time_routes = current_routes
 
 
     best_dist_routes = order_routes(best_dist_routes)
@@ -189,6 +204,13 @@ def find_best_routes(routes, events, start):
 
 
 def find_right_route(routes, from_loc, to_loc):
+    """
+    Find route (alredy evaluated) between two points
+    @param routes: list of dicts that represent all possible routes
+    @param from_loc: string of start point
+    @param to_loc: string with of end point
+    @output right_route: dict of route
+    """
     right_route = None
     for r in routes:
         if (r["from"] == from_loc and  r["to"] == to_loc) or \
@@ -198,6 +220,11 @@ def find_right_route(routes, from_loc, to_loc):
     return right_route
 
 def order_routes(routes):
+    """
+    Switch attributes from & to atributes of routes to make them consecutive in the path
+    @param routes: list of dicts that represent routes
+    @output route: list of dicts that represent routes with right from & to attributes
+    """
     idx = 1
     for r in routes:
         actual_to = r["to"]
@@ -218,6 +245,12 @@ def order_routes(routes):
     return routes
 
 def find_planner(routes, events):
+    """
+    Define a planner of given events and routes
+    @param routes: list of dicts that represent routes of the best path
+    @param events: list of dicts that represent events
+    @output planner: list of dicts that represent activites to do, both routes and events, grouped by day
+    """
     planner = {
         "1": []
     }
@@ -231,49 +264,31 @@ def find_planner(routes, events):
         if current_time<10:
             current_time += event["duration"]
             planner[str(day)].append(route)
-            if current_time<10:
-                planner[str(day)].append(event)
-            else:
-                current_time -= event["duration"]
-                time_free = 10-current_time
-                time_ev_left = event["duration"]-time_free
-                short_event = event.copy()
-                short_event["duration"] = time_free
-                planner[str(day)].append(short_event)
-                while (time_ev_left>8):
-                    day += 1
-                    planner[str(day)] = []
-                    new_ev = event.copy()
-                    new_ev["duration"] = 8
-                    time_ev_left = time_ev_left-8
-                    planner[str(day)].append(new_ev)
+            current_time, planner, day = split_event_helper(current_time, event, planner, day)
 
-                day +=1
-                planner[str(day)] = []
-                short_event = event.copy()
-                short_event["duration"] = time_ev_left
-                planner[str(day)].append(short_event)
-                current_time = time_ev_left
         else:
             current_time -= route["duration"]
             time_free = 10-current_time
             time_route_left = route["duration"]-time_free
-            short_route = route
+            short_route = route.copy()
             short_route["duration"] = round(time_free, 2)
             planner[str(day)].append(short_route)
             while (time_route_left>8):
                 day +=1
                 planner[str(day)] = []
-                short_route = route
+                short_route = route.copy()
                 short_route["duration"] = 8
                 time_route_left = route["duration"]-time_free
                 planner[str(day)].append(short_route)
 
             day +=1
             planner[str(day)] = []
-            short_route = route
+            short_route = route.copy()
             short_route["duration"] = time_route_left
-
+            planner[str(day)].append(short_route)
+            current_time = time_route_left
+            current_time += event["duration"]
+            current_time, planner, day = split_event_helper(current_time, event, planner, day)
         idx += 1
 
     planner[str(day)].append(routes[idx])
@@ -300,3 +315,41 @@ def find_planner(routes, events):
             }
             final_planner.append(info)
     return final_planner
+
+
+def split_event_helper(current_time, event, planner, day):
+    """
+    Methot to split an events in 2 or more days
+    @param current_time: float of current time occupied in this day
+    @param event: dict that represent the event to evenutally split
+    @param planner: dict that represent current planner
+    @param day: int of day
+    @output current_time: float of current time occupied in this day
+    @output planner: dict that represent current planner
+    @output day: int of day
+    """
+    if current_time<10:
+        planner[str(day)].append(event)
+    else:
+        current_time -= event["duration"]
+        time_free = 10-current_time
+        time_ev_left = event["duration"]-time_free
+        short_event = event.copy()
+        short_event["duration"] = time_free
+        planner[str(day)].append(short_event)
+        while (time_ev_left>8):
+            day += 1
+            planner[str(day)] = []
+            new_ev = event.copy()
+            new_ev["duration"] = 8
+            time_ev_left = time_ev_left-8
+            planner[str(day)].append(new_ev)
+
+        day +=1
+        planner[str(day)] = []
+        short_event = event.copy()
+        short_event["duration"] = time_ev_left
+        planner[str(day)].append(short_event)
+        current_time = time_ev_left
+
+    return current_time, planner, day

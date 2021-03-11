@@ -1,6 +1,7 @@
 import requests
 import json
 
+# base url to Microsoft Graph
 graph_url = 'https://graph.microsoft.com/v1.0'
 
 def get_user(token):
