@@ -5,7 +5,11 @@ from datetime import datetime, timedelta
 from MB_Calendar.auth_helper import get_sign_in_flow, get_token_from_code, store_user, remove_user_and_token, get_token
 from MB_Calendar.graph_helper import *
 from MB_Calendar.utils_views import *
-from  MB_Calendar.common_utils import MB_HEADQUARTER_LATITUDE, MB_HEADQUARTER_LONGITUDE
+from MB_Calendar.common_utils import MB_HEADQUARTER_LATITUDE, MB_HEADQUARTER_LONGITUDE
+from MB_Calendar.excel_utils import *
+from MB_Calendar.word_utils import *
+from MB_Calendar.c_utils import find_best_monthly_planner
+import os
 
 def home(request):
   """
@@ -260,44 +264,8 @@ def viewmap(request):
         "latitude": MB_HEADQUARTER_LATITUDE,
         "longitude": MB_HEADQUARTER_LONGITUDE
     }
-    routes = []
-    remaining_evs = [e for e in events_min ]
-    for ev in events_min:
-        # find all routes between events' locations and start point
-        route = get_route(
-            MB_HEADQUARTER_LATITUDE,
-            MB_HEADQUARTER_LONGITUDE,
-            ev["latitude"],
-            ev["longitude"]
-        )
-        if(route!=None):
-            f = "ModulBlok Headquarter"
-            to = ev["text"].split("<br>")[1]
-            route["text"] = "-> "+f+"<br>-> "+to+"<br>"+route["text"]
-            route["from"] = f
-            route["to"] = to
-            routes.append(route)
-        else:
-            errors.append("Could not find route from ModulBlok Headquarter to latitude:"+ev["latitude"]+" longitude:"+ev["longitude"])
-        remaining_evs.remove(ev)
-        for r_ev in remaining_evs:
-            route = get_route(
-                ev["latitude"],
-                ev["longitude"],
-                r_ev["latitude"],
-                r_ev["longitude"]
-            )
-
-            if(route!=None):
-                f = ev["text"].split("<br>")[1]
-                to = r_ev["text"].split("<br>")[1]
-                route["text"] = "-> "+f +"<br>-> "+to+ "<br>"+route["text"]
-                route["from"] = f
-                route["to"] = to
-                routes.append(route)
-            else:
-                errors.append("Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"])
-
+    routes, new_errors = get_all_routes(events_min)
+    errors.extend(new_errors)
 
     context["routes"] = [r for r in routes]
     context["maps_errors"] = errors
@@ -325,3 +293,134 @@ def viewmap(request):
 
 
     return render(request, 'map.html', context)
+
+
+def planner(request):
+  """
+  Method for render the planner interface
+  @param: request
+  """
+  context = initialize_context(request)
+  return render(request, 'planner.html', context)
+
+def elaboratePlanner(request):
+    """
+    Method for evaluate best planner and render result
+    @param: request
+    """
+    context = initialize_context(request)
+    if request.POST:
+        context["year"] = request.POST.get("year")
+        tot_rows = int(request.POST.get("tot_rows"))
+        monthinteger = int(request.POST.get("month"))
+        month = datetime(1900, monthinteger, 1).strftime('%B')
+        context["month"] = month
+        events_min = []
+        errors = []
+        tot_ev_duration = 0
+        for idx in range(tot_rows):
+            location = request.POST.get("address_"+str(idx+1))
+            lat, long = get_lat_long_from_location(location)
+            if (lat==None or long==None):
+                errors.append({"message": "Could not find Coordinates for location "+location})
+                continue
+
+            duration = request.POST.get("duration_"+str(idx+1))
+            tot_ev_duration += float(duration)
+            subject = request.POST.get("title_"+str(idx+1))
+            text = subject + "<br>" + location + "<br>Duration: " + str(duration)+" Hours"
+            event_min = {
+                "subject": subject,
+                "text": text,
+                "latitude": lat,
+                "longitude": long,
+                "duration": duration,
+                "location": location,
+                "info": request.POST.get("info_"+str(idx+1))
+            }
+            events_min.append(event_min)
+
+        context["events"] = events_min
+        context["events_info"]= {
+            "tot_duration": tot_ev_duration
+        }
+        context["headquarter"] = {
+            "latitude": MB_HEADQUARTER_LATITUDE,
+            "longitude": MB_HEADQUARTER_LONGITUDE
+        }
+        print("find all routes")
+        routes, new_errors = get_all_routes(events_min)
+        errors.extend(new_errors)
+        context["routes"] = routes
+        print("find best planner")
+        max_days = request.POST.get("max_days")
+        context["max_days"] = max_days
+        planner = find_best_monthly_planner(events_min, routes, max_days, "ModulBlok Headquarter")
+
+        context["planner"] = planner
+        context["planner_info"] = get_planner_info(planner)
+
+        if len(errors)>0:
+            context["errors"] = errors
+    else:
+        context["errors"] = [{"message": "Method error"}]
+    return render(request, 'best_planner.html', context)
+
+
+
+def uploadFile(request):
+    """
+    Method for upload info from excel file
+    @param: request
+    """
+    context = initialize_context(request)
+    rows = extract_rows_from_excel(request.FILES.get("file"))
+    context["rows_from_file"] = rows
+    context["row_number"] = len(rows)
+    return render(request, 'planner.html', context)
+
+def saveWord(request):
+    """
+    Method for save week in word file
+    @param: request
+    """
+    year = request.GET.get("year", None)
+    month = request.GET.get("month", None)
+    week = request.GET.get("week", None)
+    max_days = request.GET.get("max_days", None)
+    if year==None or month==None or week==None or max_days==None:
+        return HttpResponse("<script>alert('Month, Week, Year or Max Days not found!'); history.back()</script>")
+    week_str_list = request.GET.get("data", [])
+    first_day = 1+(int(week)-1)*7
+    date_start = datetime.strptime(str(first_day)+" "+month+", "+year, '%d %B, %Y')
+    week_day = date_start.weekday()
+    if(week_day>0):
+        delta = 7-week_day
+        date_start = date_start+timedelta(days=delta)
+
+    week_str_list = request.GET.get("data", [])
+    if len(week_str_list)>0:
+        json_acceptable_string = week_str_list.replace("{'", "{\"")
+        json_acceptable_string = json_acceptable_string.replace("': '", "\": \"")
+        json_acceptable_string = json_acceptable_string.replace("':", "\":")
+        json_acceptable_string = json_acceptable_string.replace("', '", "\", \"")
+        json_acceptable_string = json_acceptable_string.replace(", '", ", \"")
+        json_acceptable_string = json_acceptable_string.replace("'}", "\"}")
+        week_list = json.loads(json_acceptable_string)
+        data_to_write = []
+        for el in week_list:
+            if el["type"]=="event":
+                print(el)
+                info = {
+                    "day": el["day"],
+                    "description": el["description"],
+                    "location": el["location"],
+                    "duration": el["duration"],
+                    "info": el.get("info", "")
+                }
+                print("DAY:", el["day"])
+                print(el["description"])
+                data_to_write.append(info)
+        file_name = write_to_word_doc(year=year, month=month, week=week, start_date=date_start, max_days=max_days, data=data_to_write)
+
+    return HttpResponse("<a href='../static/"+file_name+"' download id='download'></a><script>document.getElementById('download').click(); history.back()</script>")

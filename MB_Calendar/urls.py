@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
   # home
   path('', views.home, name='home'),
-  
+
   # auth
   path('signin', views.sign_in, name='signin'),
   path('signout', views.sign_out, name='signout'),
@@ -17,4 +17,10 @@ urlpatterns = [
   path('calendar/edit/<id>', views.editevent, name='editevent'),
   path('calendar/delete/<id>', views.delevent, name='delevent'),
   path('calendar/viewmap', views.viewmap, name='viewmap'),
+
+  # planner views
+  path('planner', views.planner, name='planner'),
+  path('uploadFile', views.uploadFile, name='uploadFile'),
+  path('elaboratePlanner', views.elaboratePlanner, name='elaboratePlanner'),
+  path('planner/saveWord', views.saveWord, name='saveWord'),
 ]

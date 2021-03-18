@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Make a Planner</h1>
+<button type="button" class="btn btn-info" data-toggle="modal" data-target="#uploadModal">Upload file</button>
+<button type="button" class="btn btn-primary mr-2" style="float: right; background-color:#28a745; border-color:#28a745" onclick="addRowFunction()">
+  New Row
+</button>
+<br><br>
+<form action="elaboratePlanner" method="POST">
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="col">
+      <div class="form-group">
+        <label><b>Month</b></label>
+        <select class="form-control" name="month" id="month">
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label><b>Year</b></label>
+        <input class="form-control" name="year" type="text" value="2021">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label><b>Max Travel days</b></label>
+        <input class="form-control" name="max_days" type="text" value="5">
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group">
+        <label> <font color="white" > Button </font> </label>
+        <input class="form-control btn btn-primary mr-2" data-toggle="modal" data-target="#loadingModal" type="submit" value="ELABORATE" />
+      </div>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr style="background-color:#a5a5a5">
+        <th scope="col">Title</th>
+        <th scope="col">Full Address</th>
+        <th scope="col">Duration (Hours)</th>
+        <th scope="col">Info</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      {% if rows_from_file %}
+        {% for row in rows_from_file %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+            <td><textarea class="form-control" name="title_{{forloop.counter}}">{{row.Title}}</textarea></td>
+            <script tyepe="text/javascript">
+              var el = document.getElementsByName("title_{{forloop.counter}}")[0];
+              ;
+              el.style.height = 50+el.scrollHeight+"px";
+            </script>
+            <td><textarea class="form-control" name="address_{{forloop.counter}}">{{row.Address}}</textarea></td>
+            <script tyepe="text/javascript">
+              var el = document.getElementsByName("address_{{forloop.counter}}")[0];
+              el.style.height = 50+el.scrollHeight+"px";
+            </script>
+            <td><input class="form-control" type="number" name="duration_{{forloop.counter}}" value={{row.Duration}} min=0.5 step=0.5></td>
+            <td><textarea class="form-control" name="info_{{forloop.counter}}">{{row.Info}}</textarea></td>
+            <script tyepe="text/javascript">
+              var el = document.getElementsByName("info_{{forloop.counter}}")[0];
+              el.style.height = 30+el.scrollHeight+"px";
+            </script>
+          </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+  <input type="hidden" name="tot_rows" id="current_rows" value="{% if row_number %} {{ row_number }} {% else %} 0 {% endif %}">
+</form>
+<script type="text/javascript">
+    var current_rows = parseInt("{% if row_number %} {{ row_number }} {% else %} 0 {% endif %}");
+    var input_tot_rows = document.getElementById("current_rows");
+
+    function addRowFunction(){
+      current_rows += 1;
+      var tbody = document.getElementById("tbody");
+      var new_row = document.createElement("TR");
+      if(current_rows%2==0){
+        new_row.style.backgroundColor = "#c5c5c5"
+      }
+
+      var td_title = create_td_with_textarea("title_", true)
+      new_row.appendChild(td_title);
+
+      var td_address = create_td_with_textarea("address_", true)
+      new_row.appendChild(td_address);
+
+      var td_duration = create_td_with_input("duration_", "number")
+      new_row.appendChild(td_duration);
+
+      var td_info = create_td_with_textarea("info_", false)
+
+      new_row.appendChild(td_info);
+
+      tbody.appendChild(new_row);
+
+      input_tot_rows.setAttribute("value", current_rows);
+
+    }
+
+    function create_td_with_input(name, type){
+      var td = document.createElement("TD");
+      var input =  document.createElement("INPUT");
+      input.setAttribute("type", type);
+      if(type=="number"){
+        input.setAttribute("min", 0.5);
+        input.setAttribute("step", 0.5);
+      }
+      input.setAttribute("name", name+current_rows);
+      input.setAttribute("placeholder", name+current_rows);
+      input.setAttribute("required", true);
+      input.setAttribute("class", "form-control");
+      td.appendChild(input);
+      return td;
+    }
+
+  function create_td_with_textarea(name, required){
+    var td = document.createElement("TD");
+    var area_input = document.createElement("TEXTAREA");
+    area_input.setAttribute("name", name+current_rows);
+    area_input.setAttribute("placeholder", name+current_rows);
+    area_input.setAttribute("class", "form-control");
+    td.appendChild(area_input);
+    area_input.setAttribute("required", required);
+    return td;
+  }
+</script>
+
+<!-- Modal -->
+<div id="uploadModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Upload Excel File</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+
+      </div>
+      <div class="modal-body">
+        <!-- Form -->
+        <form method='post' action='/uploadFile' enctype="multipart/form-data">
+          {% csrf_token %}
+          Select file : <input type='file' name='file' id='file' class='form-control' accept=".xlsx"><br>
+          <button type='submit' class='btn btn-info'>Upload</button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

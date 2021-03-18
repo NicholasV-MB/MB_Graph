@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% load static %}
+<script type="text/javascript">
+  {% if errors %}
+    {% for err in errors %}
+      alert("{{err.message}}");
+    {% endfor %}
+  {% endif %}
+</script>
+<center><font size=6><b>Monthly Planner of {{month}}</b></font></center><br>
+<br><br>
+
+{% if planner %}
+
+  {% for key, value in planner.items %}
+    <b><font size=5>Planner Week {{key}}</font></b>
+    <a href="/planner/saveWord?year={{year}}&month={{month}}&week={{key}}&max_days={{max_days}}&data={{value}}" class="btn btn-primary mr-2" style="float:right">Save Word</a>
+    <br><br>
+    <table class="table">
+      <thead>
+        <tr style="background-color:#a5a5a5; border: 3px solid;">
+          <th scope="col" style="vertical-align:middle;">Day</th>
+          <th scope="col" style="vertical-align:middle;">Type</th>
+          <th scope="col" style="vertical-align:middle;">Description</th>
+          <th scope="col" style="vertical-align:middle;">Duration (Hours)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% load custom_template_tags %}
+          {% setvar "0" as day %}
+          {% for mission in value %}
+
+
+            <tr style="vertical-align:middle; background-color: {% if forloop.counter|divisibleby:2 %}#c5c5c5{% else %}#ffffff{% endif %}">
+              {% ifnotequal mission.day day %}
+
+                <td rowspan="{{ mission.rowspan }}" style="border: 3px solid;background-color:#c7c7c7; vertical-align:middle;">
+                    <center><b>{{ mission.day }}</b></center>
+                </td>
+                {% setvar mission.day as day %}
+                <td style="border-top: 3px solid; vertical-align:middle;"><b>{{ mission.type }}</b></td>
+                <td style="border-top: 3px solid; vertical-align:middle;">{{ mission.description }}</td>
+                <td style="border-top: 3px solid; border-right: 3px solid; vertical-align:middle;">{{ mission.duration }}</td>
+              {% else %}
+                <td style="vertical-align:middle;"><b>{{ mission.type }}</b></td>
+                <td style="vertical-align:middle;">{{ mission.description }}</td>
+                <td style="border-right: 3px solid; vertical-align:middle;">{{ mission.duration }}</td>
+
+              {% endifnotequal %}
+
+            </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        {% if planner_info %}
+
+          {% for k, v in planner_info.items %}
+            {% ifequal k key %}
+              <tr style="background-color:#a5a5a5; border: 3px solid;">
+                <td colspan=3 style="vertical-align:middle;"><b>TOTAL EVENT TIME</b></td>
+                <td style="vertical-align:middle;"><b>{{v.ev_duration}}</b></td>
+              </tr>
+              <tr style="background-color:#a5a5a5; border: 3px solid;">
+                <td colspan=3 style="vertical-align:middle;"><b>TOTAL TRIP TIME</b></td>
+                <td style="vertical-align:middle;"><b>{{v.trip_duration}}</b></td>
+              </tr>
+              <tr style="background-color:#a5a5a5; border: 3px solid;">
+                <td colspan=3><b>TOTAL </b></td>
+                <td style="vertical-align:middle;"><b>{{v.tot_duration}}</b></td>
+              </tr>
+            {% endifequal %}
+          {% endfor %}
+        {% endif %}
+      </tfoot>
+    </table>
+    <br><br>
+  {% endfor %}
+{% endif %}
+
+
+{% endblock %}

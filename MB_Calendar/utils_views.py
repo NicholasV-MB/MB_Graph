@@ -3,6 +3,7 @@ from dateutil import tz, parser
 from datetime import datetime, timedelta
 from MB_Calendar.auth_helper import *
 from MB_Calendar.graph_helper import get_calendar_events
+from  MB_Calendar.common_utils import MB_HEADQUARTER_LATITUDE, MB_HEADQUARTER_LONGITUDE
 import requests
 import json
 import itertools
@@ -108,9 +109,9 @@ def get_lat_long_from_location(address):
     r = requests.get('{0}?q={1}&format=jsonv2'.format(nominatim_base_url, address))
     if str(r.status_code)=="200":
         json_resp = r.json()
-        json_resp = json_resp[0]
-        lat = json_resp.get("lat")
-        long = json_resp.get("lon")
+        json_resp = json_resp[0] if len(json_resp)>0 else {}
+        lat = json_resp.get("lat", None)
+        long = json_resp.get("lon", None)
     else:
         lat = None
         long = None
@@ -130,20 +131,24 @@ def get_route(lat1, long1, lat2, long2):
         lat1,
         long2,
         lat2)
-    r = requests.get(url)
-    if str(r.status_code)=="200":
-        r_json = r.json()
-        duration = round(r_json["routes"][0]["duration"]/3600, 2)
-        distance = round(r_json["routes"][0]["distance"]/1000, 2)
-        text = str(distance) + " KM<br>"+ str(duration)+" Hours"
-        geometry = r_json["routes"][0]["geometry"]
-        resp = {
-            "text": text,
-            "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\"),
-            "duration": duration,
-            "distance": distance
-        }
-    else:
+    try:
+        r = requests.get(url)
+        if str(r.status_code)=="200":
+            r_json = r.json()
+            duration = round(r_json["routes"][0]["duration"]/3600, 2)
+            distance = round(r_json["routes"][0]["distance"]/1000, 2)
+            text = str(distance) + " KM<br>"+ str(duration)+" Hours"
+            geometry = r_json["routes"][0]["geometry"]
+            resp = {
+                "text": text,
+                "geometry": r_json["routes"][0]["geometry"].replace("\\", "\\\\"),
+                "duration": duration,
+                "distance": distance
+            }
+        else:
+            resp = None
+    except Exception as e:
+        print(e)
         resp = None
     return resp
 
@@ -353,3 +358,79 @@ def split_event_helper(current_time, event, planner, day):
         current_time = time_ev_left
 
     return current_time, planner, day
+
+
+def get_all_routes(events_min):
+    """
+    Method for get every possible route between given events
+    @param events_min: list of dicts with event info
+    @return routes: lisf of dicts of routes found
+    @return errors: list of dicts of error (routes not found)
+    """
+    errors = []
+    routes = []
+    remaining_evs = [e for e in events_min ]
+    idx_ev = 1
+    for ev in events_min:
+        print(str(idx_ev)+"/"+str(len(events_min)))
+        idx_ev+=1
+        # find all routes between events' locations and start point
+        route = get_route(
+            MB_HEADQUARTER_LATITUDE,
+            MB_HEADQUARTER_LONGITUDE,
+            ev["latitude"],
+            ev["longitude"]
+        )
+        if(route!=None):
+            f = "ModulBlok Headquarter"
+            to = ev["text"].split("<br>")[1]
+            route["text"] = "-> "+f+"<br>-> "+to+"<br>"+route["text"]
+            route["from"] = f
+            route["to"] = to
+            routes.append(route)
+        else:
+            errors.append({
+                "message":"Could not find route from ModulBlok Headquarter to latitude:"+ev["latitude"]+" longitude:"+ev["longitude"]
+            })
+        remaining_evs.remove(ev)
+        for r_ev in remaining_evs:
+            route = get_route(
+                ev["latitude"],
+                ev["longitude"],
+                r_ev["latitude"],
+                r_ev["longitude"]
+            )
+
+            if(route!=None):
+                f = ev["text"].split("<br>")[1]
+                to = r_ev["text"].split("<br>")[1]
+                route["text"] = "-> "+f +"<br>-> "+to+ "<br>"+route["text"]
+                route["from"] = f
+                route["to"] = to
+                routes.append(route)
+            else:
+                errors.append({
+                    "message":"Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"]
+                    })
+
+    return routes, errors
+
+
+
+def get_planner_info(planner):
+    """
+    Method for getting information about duration of events, trips and total of week activites
+    @param planner: dict of activities
+    @return planner_info: dict with duration info
+    """
+    planner_info = {}
+    for week in planner:
+        tot_duration = sum((el["duration"] for el in planner[week]))
+        trip_duration = sum((el["duration"]  for el in planner[week]  if el["type"]=="trip"))
+        ev_duration = sum((el["duration"]  for el in planner[week]  if el["type"]=="event" ))
+        planner_info[week] = {
+            "tot_duration": round(tot_duration, 2),
+            "trip_duration": round(trip_duration, 2),
+            "ev_duration": round(ev_duration, 2)
+        }
+    return planner_info
