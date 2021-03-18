@@ -352,7 +352,6 @@ def elaboratePlanner(request):
         routes, new_errors = get_all_routes(events_min)
         errors.extend(new_errors)
         context["routes"] = routes
-        print("find best planner")
         max_days = request.POST.get("max_days")
         context["max_days"] = max_days
         planner = find_best_monthly_planner(events_min, routes, max_days, "ModulBlok Headquarter")
@@ -410,7 +409,6 @@ def saveWord(request):
         data_to_write = []
         for el in week_list:
             if el["type"]=="event":
-                print(el)
                 info = {
                     "day": el["day"],
                     "description": el["description"],
@@ -418,8 +416,6 @@ def saveWord(request):
                     "duration": el["duration"],
                     "info": el.get("info", "")
                 }
-                print("DAY:", el["day"])
-                print(el["description"])
                 data_to_write.append(info)
         file_name = write_to_word_doc(year=year, month=month, week=week, start_date=date_start, max_days=max_days, data=data_to_write)
 

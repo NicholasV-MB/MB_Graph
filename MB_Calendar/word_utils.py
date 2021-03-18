@@ -1,7 +1,9 @@
+import time
 from docx import Document
 from docx.shared import Inches
 from datetime import datetime, timedelta
-import time
+from MB_Calendar.common_utils import remove_all_files_inside_folder
+
 
 def write_to_word_doc(year, month, week, start_date, max_days, data):
     """
@@ -16,6 +18,10 @@ def write_to_word_doc(year, month, week, start_date, max_days, data):
     @return: file_name: string with path inside static folder
     """
     current_dir = "MB_Calendar/static/"
+    # first of all: remove all files from temp_files folder
+    mypath = current_dir+"temp_files/"
+    remove_all_files_inside_folder(mypath)
+
     file_name = "temp_files/PLAN_WEEK"+str(week)+'_OF_'+month+'_'+ year+"_MAX"+max_days+"DAYS.docx"
     document = Document()
 
