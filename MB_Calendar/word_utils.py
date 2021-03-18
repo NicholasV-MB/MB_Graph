@@ -37,7 +37,8 @@ def write_to_word_doc(year, month, week, start_date, max_days, data):
         time_delta = int(activity["day"])-1
         new_date = start_date + timedelta(time_delta)
         document.add_heading(new_date.strftime("%d.%m.%y"), level=1)
-        document.add_paragraph(activity["description"])
+        title = document.add_paragraph("")
+        title.add_run(activity["description"]).bold = True
         document.add_paragraph(activity["location"])
         document.add_paragraph("Duration: "+str(activity["duration"])+" Hours")
         document.add_paragraph(activity["info"])
