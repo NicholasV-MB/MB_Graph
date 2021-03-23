@@ -2,6 +2,7 @@
 
 {% block content %}
 {% load static %}
+{% load custom_template_tags %}
 <script type="text/javascript">
   {% if errors %}
     {% for err in errors %}
@@ -15,8 +16,15 @@
 {% if planner %}
 
   {% for key, value in planner.items %}
+
+
     <b><font size=5>Planner Week {{key}}</font></b>
-    <a href="/planner/saveWord?year={{year}}&month={{month}}&week={{key}}&max_days={{max_days}}&data={{value}}" class="btn btn-primary mr-2" style="float:right">Save Word</a>
+    {% for k, v in planner_events.items %}
+      {% ifequal k key  %}
+        <a href="/planner/saveWord?year={{year}}&month={{month}}&week={{key}}&max_days={{max_days}}&data={{v}}" class="btn btn-primary mr-2" style="float:right">Save Word</a>
+
+      {% endifequal %}
+    {%  endfor %}
     <br><br>
     <table class="table">
       <thead>
@@ -28,7 +36,7 @@
         </tr>
       </thead>
       <tbody>
-        {% load custom_template_tags %}
+
           {% setvar "0" as day %}
           {% for mission in value %}
 

@@ -325,7 +325,7 @@ def elaboratePlanner(request):
                 errors.append({"message": "Could not find Coordinates for location "+location})
                 continue
 
-            duration = request.POST.get("duration_"+str(idx+1))
+            duration = float(request.POST.get("duration_"+str(idx+1)))
             tot_ev_duration += float(duration)
             subject = request.POST.get("title_"+str(idx+1))
             text = subject + "<br>" + location + "<br>Duration: " + str(duration)+" Hours"
@@ -358,6 +358,13 @@ def elaboratePlanner(request):
 
         context["planner"] = planner
         context["planner_info"] = get_planner_info(planner)
+        context["planner_events"] = {}
+        for week in planner:
+            week_events = []
+            for el in planner[week]:
+                if el["type"]=="event":
+                    week_events.append(el)
+            context["planner_events"][week] = week_events
 
         if len(errors)>0:
             context["errors"] = errors
@@ -398,6 +405,8 @@ def saveWord(request):
         date_start = date_start+timedelta(days=delta)
 
     week_str_list = request.GET.get("data", [])
+    print(week_str_list)
+    print()
     if len(week_str_list)>0:
         json_acceptable_string = week_str_list.replace("{'", "{\"")
         json_acceptable_string = json_acceptable_string.replace("': '", "\": \"")
@@ -405,6 +414,7 @@ def saveWord(request):
         json_acceptable_string = json_acceptable_string.replace("', '", "\", \"")
         json_acceptable_string = json_acceptable_string.replace(", '", ", \"")
         json_acceptable_string = json_acceptable_string.replace("'}", "\"}")
+        print(json_acceptable_string)
         week_list = json.loads(json_acceptable_string)
         data_to_write = []
         for el in week_list:
