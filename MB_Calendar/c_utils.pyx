@@ -12,6 +12,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
         list_permutated = list(permutations)
     else:
         list_permutated = find_best_permutation(events, routes)
+    list_permutated = [events]
     min_time = float('inf')
     max_days_in_week = int(max_days_in_week)
     tot_combo = len(list_permutated)
@@ -50,10 +51,10 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
                 time_left_today = END_HOUR_WORKING-hour_now
                 time_to_finish = hour_toev_ev_back-time_left_today
                 days_to_finish = int(time_to_finish // 8)
-                if (days_to_finish+day) >= max_days_in_week:
+                if (days_to_finish+day) > max_days_in_week:
                     # Non possibile neanche in settimana
                     # Se ultimo giorno di lavoro è solo viaggio soluzione da scartare
-                    if day>1 and len(current_planner[week].get(day, current_planner[week][day-1]))==0:
+                    if day>1 and len(current_planner[week].get(day, []))==0:
                         break
                     current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_from_loc_to_base)
                     week += 1
@@ -70,6 +71,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
             hour_before_add = hour_now
             current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, event)
             if day != day_before_add and ev_duration<=8:
+                # attività effettuata il giorno dopo sprecando tempo il giorno prima
                 hours_wasted = (END_HOUR_WORKING-hour_before_add)
                 total_time += hours_wasted
 
@@ -77,7 +79,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
             from_loc = event["location"]
 
 
-        if day>1 and len(current_planner[week].get(day, current_planner[week][day-1]))==0:
+        if day>1 and len(current_planner[week].get(day, []))==0:
             idx_combo += 1
             continue
 
@@ -105,14 +107,18 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
 def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
     if bool(activity)==False:
       return planner, day, hour_now
-    if (float(activity["duration"])+hour_now)<END_HOUR_WORKING:
+    if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):
         # activity in giornata
         planner[week][day].append(activity)
         hour_now += float(activity["duration"])
+        if hour_now > END_HOUR_WORKING:
+          day += 1
+          planner[week][day] = []
+          hour_now = START_HOUR_WORKING
     else:
         # activity non si conclude in giornata
         time_left_today = END_HOUR_WORKING - hour_now
-        # split solo se evento dura più di 8 ore
+        # split solo se è evento e dura più di 8 ore
         if activity["text"].startswith("->")==False and activity["duration"]<=8:
           # evento dura meno di 8 ore
           if activity["duration"]>(time_left_today+TOLERATION_TIME):
@@ -126,15 +132,17 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
             planner[week][day].append(activity)
             day += 1
             planner[week][day] = []
-
             hour_now = START_HOUR_WORKING
         else:
-          if (activity["duration"]-time_left_today)>TOLERATION_TIME:
-              activity_today = activity.copy()
-              activity_today["duration"] = time_left_today
-              planner[week][day].append(activity_today)
-          else:
+          # evento che dura più di 8 ore o strada che non si conclude in giornata
+          if activity["text"].startswith("->")==False and time_left_today<TOLERATION_TIME:
+              day += 1
+              planner[week][day] = []
+              hour_now = START_HOUR_WORKING
               time_left_today = 0
+          activity_today = activity.copy()
+          activity_today["duration"] = time_left_today
+          planner[week][day].append(activity_today)
           time_still_needed = float(activity["duration"]) - time_left_today
 
           days_of_activity_after_today = int(time_still_needed // 8)
@@ -149,7 +157,7 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
               planner[week][day] = []
 
           if time_left_last_day>TOLERATION_TIME:
-              final_activity= activity.copy()
+              final_activity = activity.copy()
               final_activity["duration"] = time_left_last_day
               planner[week][day].append(final_activity)
               hour_now = START_HOUR_WORKING+time_left_last_day
@@ -169,17 +177,22 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
 def format_order_monthly_planner(planner, base):
     final_planner = {}
     from_loc = base
+
     for week in planner:
         final_planner[week] = []
         trip_splitted = False
         for day in planner[week]:
+            hour_now = START_HOUR_WORKING
             for act in planner[week][day]:
                 activity = {
                     "day": str(day),
                     "text": act["text"],
                     "duration":  round(float(act["duration"]), 2),
-                    "rowspan": len(planner[week][day])
+                    "rowspan": len(planner[week][day]),
+                    "start_time": round(hour_now, 2)
                 }
+                hour_now += round(float(act["duration"]), 2)
+                activity["end_time"] = round(hour_now, 2)
                 if act["text"].startswith("->"):
                     activity["type"] = "trip"
                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
@@ -211,7 +224,7 @@ def reorganize_week(old_week, max_days_in_week, base, routes):
         last_trip = old_week.get(max(old_week.keys()))[-1]
 
     days_out = len(old_week)
-    time_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50
+    distance_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50
     if days_out>max_days_in_week:
       reordered_list = []
       old_text = ""
@@ -259,7 +272,7 @@ def reorganize_week(old_week, max_days_in_week, base, routes):
           if len(current_planner[week])<=max_days_in_week:
             old_week = current_planner[week]
 
-    if time_remaining>0:
+    if distance_remaining>0:
         return old_week
     else:
         reordered_list = []
