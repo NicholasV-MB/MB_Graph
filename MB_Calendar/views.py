@@ -405,8 +405,6 @@ def saveWord(request):
         date_start = date_start+timedelta(days=delta)
 
     week_str_list = request.GET.get("data", [])
-    print(week_str_list)
-    print()
     if len(week_str_list)>0:
         json_acceptable_string = week_str_list.replace("{'", "{\"")
         json_acceptable_string = json_acceptable_string.replace("': '", "\": \"")
@@ -414,7 +412,6 @@ def saveWord(request):
         json_acceptable_string = json_acceptable_string.replace("', '", "\", \"")
         json_acceptable_string = json_acceptable_string.replace(", '", ", \"")
         json_acceptable_string = json_acceptable_string.replace("'}", "\"}")
-        print(json_acceptable_string)
         week_list = json.loads(json_acceptable_string)
         data_to_write = []
         for el in week_list:

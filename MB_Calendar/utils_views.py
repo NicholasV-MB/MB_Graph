@@ -11,7 +11,7 @@ import itertools
 # BASE URLS
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
 osrm_base_url = "http://router.project-osrm.org/route/v1/car"
-# osrm_base_url = "http://127.0.0.1:5000/route/v1/car" SERVER LOCALE
+# osrm_base_url = "http://127.0.0.1:5000/route/v1/car" # SERVER LOCALE
 
 
 def get_events_context_from_request(request):
