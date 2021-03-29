@@ -11,6 +11,8 @@ import itertools
 # BASE URLS
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
 osrm_base_url = "http://router.project-osrm.org/route/v1/car"
+# osrm_base_url = "http://127.0.0.1:5000/route/v1/car" SERVER LOCALE
+
 
 def get_events_context_from_request(request):
     """
@@ -133,6 +135,7 @@ def get_route(lat1, long1, lat2, long2):
         lat2)
     try:
         r = requests.get(url)
+
         if str(r.status_code)=="200":
             r_json = r.json()
             duration = round(r_json["routes"][0]["duration"]/3600, 2)
@@ -146,6 +149,7 @@ def get_route(lat1, long1, lat2, long2):
                 "distance": distance
             }
         else:
+            print(url)
             resp = None
     except Exception as e:
         print(e)

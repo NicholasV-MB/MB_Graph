@@ -12,7 +12,9 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
         list_permutated = list(permutations)
     else:
         list_permutated = find_best_permutation(events, routes)
-    list_permutated = [events]
+
+    # list_permutated = [list_permutated[18]]
+    # list_permutated = [events]
     min_time = float('inf')
     max_days_in_week = int(max_days_in_week)
     tot_combo = len(list_permutated)
@@ -30,8 +32,12 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
         hour_now = START_HOUR_WORKING        # ora del giorno
         total_time = 0                       # tempo totale del planner
         from_loc = base
+        skip = False
         for event in combo:
+            # ciclo per ogni evento della combinazione
             if total_time > min_time:
+                # se il tempo del planner è già maggiore del minimo non continuo
+                skip = True
                 break
             r_to_ev = find_right_route(routes, from_loc, event["location"])
             r_to_ev_duration = float(r_to_ev["duration"])
@@ -46,17 +52,26 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
                 r_from_loc_to_base_duration = 0
 
             hour_toev_ev_back = r_to_ev_duration+ev_duration+r_to_base_duration
-            if (hour_now+hour_toev_ev_back)>(END_HOUR_WORKING+TOLERATION_TIME):
+            if (hour_now+hour_toev_ev_back)>(END_HOUR_WORKING+TOLERATION_TIME) or day>max_days_in_week:
                 # viaggio fino all'evento + durata evento + ritorno non possibile in giornata
                 time_left_today = END_HOUR_WORKING-hour_now
                 time_to_finish = hour_toev_ev_back-time_left_today
-                days_to_finish = int(time_to_finish // 8)
+                days_to_finish = int(time_to_finish // 8)+1
                 if (days_to_finish+day) > max_days_in_week:
                     # Non possibile neanche in settimana
-                    # Se ultimo giorno di lavoro è solo viaggio soluzione da scartare
-                    if day>1 and len(current_planner[week].get(day, []))==0:
-                        break
+                    # Aggiungo strada per il ritorno
                     current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_from_loc_to_base)
+                    time_wasted = 0
+                    if day>1 and len(current_planner[week].get(day, current_planner[week][day-1]))==1:
+                        # Se sto usando una giornata per fare solo viaggio è una soluzione da scartare
+                        skip = True
+                        break
+
+                    # calcolo il tempo sprecato
+                    if day < max_days_in_week:
+                      time_wasted += 8*(max_days_in_week-day)
+                    time_wasted += (END_HOUR_WORKING-hour_now)
+                    total_time += time_wasted
                     week += 1
                     day = 1
                     hour_now = START_HOUR_WORKING
@@ -74,31 +89,36 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
                 # attività effettuata il giorno dopo sprecando tempo il giorno prima
                 hours_wasted = (END_HOUR_WORKING-hour_before_add)
                 total_time += hours_wasted
+            if day>1 and day<=max_days_in_week and len(current_planner[week][day-1])==1 and \
+                current_planner[week][day-1][0]["text"].startswith("->")==True:
+                # giorno precedente solo viaggio soluzione da scartare
+                skip = True
+                break
+
 
             total_time += ev_duration
             from_loc = event["location"]
 
-
-        if day>1 and len(current_planner[week].get(day, []))==0:
+        if skip:
+            # se ho trovato un break nel ciclo degli eventi skippo la combinazione
             idx_combo += 1
             continue
 
         current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)
-        if day>1 and len(current_planner[week].get(day, current_planner[week][day-1]))==0:
-            idx_combo += 1
-            continue
+        total_time += r_to_base_duration
 
-        if total_time < min_time:
+
+        if total_time < min_time and total_time>0:
             min_time = total_time
             best_planner = current_planner
-            right_combo_idx = idx_combo-2
+            right_combo_idx = idx_combo-1
         else:
             del current_planner
         idx_combo += 1
 
+
     for w in best_planner:
         best_planner[w] = reorganize_week(best_planner[w], max_days_in_week, base, routes)
-
 
     best_planner = format_order_monthly_planner(best_planner, base)
     return best_planner
@@ -139,7 +159,7 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
               day += 1
               planner[week][day] = []
               hour_now = START_HOUR_WORKING
-              time_left_today = 0
+              time_left_today = 8
           activity_today = activity.copy()
           activity_today["duration"] = time_left_today
           planner[week][day].append(activity_today)
@@ -292,9 +312,17 @@ def reorganize_week(old_week, max_days_in_week, base, routes):
             }
         }
         hour_now = START_HOUR_WORKING
-
         for activity in reordered_list:
             new_planner, day, hour_now = add_activity_to_planner_helper(new_planner, day, week, hour_now, activity)
+
+        # quando rigiro il planner gli eventi in una giornata devono essere alemno 3 ore
+        for day in new_planner[1]:
+          ev_time_in_day = 0
+          for activity in new_planner[1][day]:
+            if activity["text"].startswith("->")==False:
+              ev_time_in_day += activity["duration"]
+          if ev_time_in_day<3:
+            return old_week
         return new_planner[1]
 
 def find_right_route(routes, from_loc, to_loc):
