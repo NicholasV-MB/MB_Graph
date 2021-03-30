@@ -54,7 +54,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
             hour_toev_ev_back = r_to_ev_duration+ev_duration+r_to_base_duration
             if (hour_now+hour_toev_ev_back)>(END_HOUR_WORKING+TOLERATION_TIME) or day>max_days_in_week:
                 # viaggio fino all'evento + durata evento + ritorno non possibile in giornata
-                time_left_today = END_HOUR_WORKING-hour_now
+                time_left_today = TOLERATION_TIME+END_HOUR_WORKING-hour_now
                 time_to_finish = hour_toev_ev_back-time_left_today
                 days_to_finish = int(time_to_finish // 8)+1
                 if (days_to_finish+day) > max_days_in_week:
@@ -138,9 +138,9 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
     else:
         # activity non si conclude in giornata
         time_left_today = END_HOUR_WORKING - hour_now
-        # split solo se è evento e dura più di 8 ore
-        if activity["text"].startswith("->")==False and activity["duration"]<=8:
-          # evento dura meno di 8 ore
+        # split solo se è evento e dura più di 7,5 ore
+        if activity["text"].startswith("->")==False and activity["duration"]<=7.5:
+          # evento dura meno di 7,5 ore
           if activity["duration"]>(time_left_today+TOLERATION_TIME):
             # evento non finisce oggi
             day += 1

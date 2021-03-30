@@ -7,6 +7,8 @@ from  MB_Calendar.common_utils import MB_HEADQUARTER_LATITUDE, MB_HEADQUARTER_LO
 import requests
 import json
 import itertools
+from django.conf import settings
+from django.conf.urls.static import static
 
 # BASE URLS
 nominatim_base_url = "https://nominatim.openstreetmap.org/search"
@@ -104,16 +106,36 @@ def initialize_context(request):
 
 def get_lat_long_from_location(address):
     """
+    Try to find data in file coordinates.json or
     Request to Nominatim Latitude and Longitude from given address
     @param address: string
     @output Lat, Long: string
     """
+    file_name = str(settings.BASE_DIR).replace("\\", "/")+"/MB_Calendar/static/data/coordinates.json"
+    with open(file_name, "r+") as f:
+        json_data = f.read()
+        coordinates = json.loads(json_data)
+    if coordinates:
+        for js_coord in coordinates:
+            if js_coord["address"]==address:
+                lat = float(js_coord["latitude"])
+                long = float(js_coord["longitude"])
+                return lat, long
     r = requests.get('{0}?q={1}&format=jsonv2'.format(nominatim_base_url, address))
     if str(r.status_code)=="200":
         json_resp = r.json()
         json_resp = json_resp[0] if len(json_resp)>0 else {}
         lat = json_resp.get("lat", None)
         long = json_resp.get("lon", None)
+        if lat != None and long != None:
+            data_to_save = {
+                "address": address,
+                "latitude": lat,
+                "longitude": long
+            }
+            coordinates.append(data_to_save)
+            with open(file_name, "w") as f:
+                f.write(json.dumps(coordinates))
     else:
         lat = None
         long = None
@@ -122,11 +144,24 @@ def get_lat_long_from_location(address):
 
 def get_route(lat1, long1, lat2, long2):
     """
+    Try to find route in data/routes.json or
     Request to OSRM route from given points
     @params lat1, long1: latitude and longitude of start point
     @params lat2, long2: latitude and longitude of end point
     @output route: dict
     """
+    file_name = str(settings.BASE_DIR).replace("\\", "/")+"/MB_Calendar/static/data/routes.json"
+    with open(file_name, "r+") as f:
+        json_data = f.read()
+        routes = json.loads(json_data)
+    if routes:
+        for js_route in routes:
+            if (float(js_route["lat1"])==lat1 and float(js_route["long1"])==long1 and \
+                float(js_route["lat2"])==lat2 and float(js_route["long2"])==long2) or \
+                (float(js_route["lat1"])==lat2 and float(js_route["long1"])==long2 and \
+                float(js_route["lat2"])==lat1 and float(js_route["long2"])==long1):
+                return js_route["route_info"]
+
     url = '{0}/{1},{2};{3},{4}?overview=full'.format(
         osrm_base_url,
         long1,
@@ -148,6 +183,16 @@ def get_route(lat1, long1, lat2, long2):
                 "duration": duration,
                 "distance": distance
             }
+            data_to_save = {
+                "lat1": lat1,
+                "long1": long1,
+                "lat2": lat2,
+                "long2": long2,
+                "route_info": resp
+            }
+            routes.append(data_to_save)
+            with open(file_name, "w") as f:
+                f.write(json.dumps(routes))
         else:
             print(url)
             resp = None
@@ -394,7 +439,7 @@ def get_all_routes(events_min):
             routes.append(route)
         else:
             errors.append({
-                "message":"Could not find route from ModulBlok Headquarter to latitude:"+ev["latitude"]+" longitude:"+ev["longitude"]
+                "message":"Could not find route from ModulBlok Headquarter to latitude:"+str(ev["latitude"])+" longitude:"+str(ev["longitude"])
             })
         remaining_evs.remove(ev)
         for r_ev in remaining_evs:
@@ -414,7 +459,7 @@ def get_all_routes(events_min):
                 routes.append(route)
             else:
                 errors.append({
-                    "message":"Could not find route from latitude:"+ev["latitude"]+" longitude:"+ev["longitude"] +" to latitude:"+r_ev["latitude"]+" longitude:"+r_ev["longitude"]
+                    "message":"Could not find route from latitude:"+str(ev["latitude"])+" longitude:"+str(ev["longitude"]) +" to latitude:"+str(r_ev["latitude"])+" longitude:"+str(r_ev["longitude"])
                     })
 
     return routes, errors

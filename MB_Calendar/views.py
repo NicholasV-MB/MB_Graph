@@ -321,6 +321,7 @@ def elaboratePlanner(request):
         for idx in range(tot_rows):
             location = request.POST.get("address_"+str(idx+1))
             lat, long = get_lat_long_from_location(location)
+            print(lat, long)
             if (lat==None or long==None):
                 errors.append({"message": "Could not find Coordinates for location "+location})
                 continue
@@ -383,6 +384,7 @@ def uploadFile(request):
     rows = extract_rows_from_excel(request.FILES.get("file"))
     context["rows_from_file"] = rows
     context["row_number"] = len(rows)
+
     return render(request, 'planner.html', context)
 
 def saveWord(request):
