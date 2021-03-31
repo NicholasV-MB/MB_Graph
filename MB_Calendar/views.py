@@ -181,7 +181,7 @@ def editevent(request, id):
         request.POST['ev-location'],
         attendees,
         request.POST['ev-body'],
-        user['timeZone'])
+        user['timeZone']) 
 
       # Redirect back to calendar view
       return HttpResponseRedirect(reverse('calendar')+"?ti-start="+request.POST["ti-start"]+"&ti-end="+request.POST["ti-end"])

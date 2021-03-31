@@ -2,6 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from MB_Calendar.c_compiler import *
 
 
 def main():
@@ -19,4 +20,6 @@ def main():
 
 
 if __name__ == '__main__':
+    print("RICARICOOOOOOOOOOO!")
+    run_cython_compiler()
     main()
