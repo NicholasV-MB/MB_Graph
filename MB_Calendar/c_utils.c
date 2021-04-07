@@ -1146,6 +1146,14 @@ static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x);
 
 /* PyIntBinop.proto */
 #if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_PyInt_SubtractCObj(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyInt_SubtractCObj(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceSubtract(op1, op2) : PyNumber_Subtract(op1, op2))
+#endif
+
+/* PyIntBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
 static PyObject* __Pyx_PyInt_RemainderObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
 #else
 #define __Pyx_PyInt_RemainderObjC(op1, op2, intval, inplace, zerodivision_check)\
@@ -1346,6 +1354,7 @@ static const char __pyx_k_last_trip[] = "last_trip";
 static const char __pyx_k_r_to_base[] = "r_to_base";
 static const char __pyx_k_start_loc[] = "start_loc";
 static const char __pyx_k_tot_combo[] = "tot_combo";
+static const char __pyx_k_act_in_day[] = "_act_in_day";
 static const char __pyx_k_itemgetter[] = "itemgetter";
 static const char __pyx_k_start_time[] = "start_time";
 static const char __pyx_k_startswith[] = "startswith";
@@ -1384,6 +1393,7 @@ static const char __pyx_k_END_HOUR_WORKING[] = "END_HOUR_WORKING";
 static const char __pyx_k_find_right_route[] = "find_right_route";
 static const char __pyx_k_max_days_in_week[] = "max_days_in_week";
 static const char __pyx_k_r_to_ev_duration[] = "r_to_ev_duration";
+static const char __pyx_k_hour_event_in_day[] = "hour_event_in_day";
 static const char __pyx_k_hour_toev_ev_back[] = "hour_toev_ev_back";
 static const char __pyx_k_time_still_needed[] = "time_still_needed";
 static const char __pyx_k_START_HOUR_WORKING[] = "START_HOUR_WORKING";
@@ -1416,6 +1426,7 @@ static PyObject *__pyx_n_s_TOLERATION_TIME;
 static PyObject *__pyx_kp_s__2;
 static PyObject *__pyx_n_s_act;
 static PyObject *__pyx_n_s_act_2;
+static PyObject *__pyx_n_s_act_in_day;
 static PyObject *__pyx_n_s_activity;
 static PyObject *__pyx_n_s_activity_helper;
 static PyObject *__pyx_n_s_activity_today;
@@ -1460,6 +1471,7 @@ static PyObject *__pyx_n_s_from_loc;
 static PyObject *__pyx_n_s_get;
 static PyObject *__pyx_n_s_get_event_from_location;
 static PyObject *__pyx_n_s_hour_before_add;
+static PyObject *__pyx_n_s_hour_event_in_day;
 static PyObject *__pyx_n_s_hour_now;
 static PyObject *__pyx_n_s_hour_toev_ev_back;
 static PyObject *__pyx_n_s_hours_ev_remaining;
@@ -1545,7 +1557,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
 static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_events, PyObject *__pyx_v_location); /* proto */
 static PyObject *__pyx_float_2_0;
 static PyObject *__pyx_float_8_0;
-static PyObject *__pyx_float_17_0;
+static PyObject *__pyx_float_17_5;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -1805,7 +1817,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
  *     else:
  *         list_permutated = find_best_permutation(events, routes)             # <<<<<<<<<<<<<<
  * 
- *     # list_permutated = [list_permutated[18]]
+ *     # list_permutated = [list_permutated[600]]
  */
   /*else*/ {
     __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_find_best_permutation); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 14, __pyx_L1_error)
@@ -1861,7 +1873,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
   __pyx_L3:;
 
   /* "MB_Calendar/c_utils.pyx":18
- *     # list_permutated = [list_permutated[18]]
+ *     # list_permutated = [list_permutated[600]]
  *     # list_permutated = [events]
  *     min_time = float('inf')             # <<<<<<<<<<<<<<
  *     max_days_in_week = int(max_days_in_week)
@@ -4031,7 +4043,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
  *             del current_planner
  *         idx_combo += 1             # <<<<<<<<<<<<<<
  * 
- * 
+ *     # print("right_combo_idx: "+str(right_combo_idx))
  */
     __pyx_t_7 = __Pyx_PyInt_AddObjC(__pyx_v_idx_combo, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 132, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
@@ -4051,7 +4063,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
 
   /* "MB_Calendar/c_utils.pyx":135
  * 
- * 
+ *     # print("right_combo_idx: "+str(right_combo_idx))
  *     for w in best_planner:             # <<<<<<<<<<<<<<
  *         best_planner[w] = reorganize_week(best_planner[w], max_days_in_week, base, routes)
  * 
@@ -4099,7 +4111,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
     __pyx_t_7 = 0;
 
     /* "MB_Calendar/c_utils.pyx":136
- * 
+ *     # print("right_combo_idx: "+str(right_combo_idx))
  *     for w in best_planner:
  *         best_planner[w] = reorganize_week(best_planner[w], max_days_in_week, base, routes)             # <<<<<<<<<<<<<<
  * 
@@ -4167,7 +4179,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_find_best_monthly_planner(CYTHO
 
     /* "MB_Calendar/c_utils.pyx":135
  * 
- * 
+ *     # print("right_combo_idx: "+str(right_combo_idx))
  *     for w in best_planner:             # <<<<<<<<<<<<<<
  *         best_planner[w] = reorganize_week(best_planner[w], max_days_in_week, base, routes)
  * 
@@ -4402,6 +4414,8 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_3add_activity_to_planner_helper
 }
 
 static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_planner, PyObject *__pyx_v_day, PyObject *__pyx_v_week, PyObject *__pyx_v_hour_now, PyObject *__pyx_v_activity) {
+  PyObject *__pyx_v_hour_event_in_day = NULL;
+  PyObject *__pyx_v__act_in_day = NULL;
   PyObject *__pyx_v_time_left_today = NULL;
   PyObject *__pyx_v_event_days_of_work = NULL;
   PyObject *__pyx_v_hours_ev_remaining = NULL;
@@ -4420,12 +4434,12 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  int __pyx_t_6;
-  int __pyx_t_7;
-  Py_ssize_t __pyx_t_8;
-  PyObject *(*__pyx_t_9)(PyObject *);
+  Py_ssize_t __pyx_t_4;
+  PyObject *(*__pyx_t_5)(PyObject *);
+  PyObject *__pyx_t_6 = NULL;
+  PyObject *__pyx_t_7 = NULL;
+  int __pyx_t_8;
+  int __pyx_t_9;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -4438,7 +4452,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *     # print("week: "+str(week))
  *     if bool(activity)==False:             # <<<<<<<<<<<<<<
  *       return planner, day, hour_now
- *     if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):
+ *     hour_event_in_day = 0
  */
   __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_v_activity); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 149, __pyx_L1_error)
   __pyx_t_2 = __Pyx_PyBool_FromLong((!(!__pyx_t_1))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 149, __pyx_L1_error)
@@ -4453,8 +4467,8 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *     # print("week: "+str(week))
  *     if bool(activity)==False:
  *       return planner, day, hour_now             # <<<<<<<<<<<<<<
- *     if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):
- *         # activity in giornata
+ *     hour_event_in_day = 0
+ *     for _act_in_day in planner[week][day]:
  */
     __Pyx_XDECREF(__pyx_r);
     __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 150, __pyx_L1_error)
@@ -4477,591 +4491,952 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *     # print("week: "+str(week))
  *     if bool(activity)==False:             # <<<<<<<<<<<<<<
  *       return planner, day, hour_now
- *     if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):
+ *     hour_event_in_day = 0
  */
   }
 
   /* "MB_Calendar/c_utils.pyx":151
  *     if bool(activity)==False:
  *       return planner, day, hour_now
- *     if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):             # <<<<<<<<<<<<<<
+ *     hour_event_in_day = 0             # <<<<<<<<<<<<<<
+ *     for _act_in_day in planner[week][day]:
+ *         if _act_in_day["text"].startswith("->")==False:
+ */
+  __Pyx_INCREF(__pyx_int_0);
+  __pyx_v_hour_event_in_day = __pyx_int_0;
+
+  /* "MB_Calendar/c_utils.pyx":152
+ *       return planner, day, hour_now
+ *     hour_event_in_day = 0
+ *     for _act_in_day in planner[week][day]:             # <<<<<<<<<<<<<<
+ *         if _act_in_day["text"].startswith("->")==False:
+ *             hour_event_in_day += _act_in_day["duration"]
+ */
+  __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
+    __pyx_t_3 = __pyx_t_2; __Pyx_INCREF(__pyx_t_3); __pyx_t_4 = 0;
+    __pyx_t_5 = NULL;
+  } else {
+    __pyx_t_4 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 152, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_5 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 152, __pyx_L1_error)
+  }
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  for (;;) {
+    if (likely(!__pyx_t_5)) {
+      if (likely(PyList_CheckExact(__pyx_t_3))) {
+        if (__pyx_t_4 >= PyList_GET_SIZE(__pyx_t_3)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_2); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 152, __pyx_L1_error)
+        #else
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        #endif
+      } else {
+        if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_2); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 152, __pyx_L1_error)
+        #else
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_2);
+        #endif
+      }
+    } else {
+      __pyx_t_2 = __pyx_t_5(__pyx_t_3);
+      if (unlikely(!__pyx_t_2)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
+          else __PYX_ERR(0, 152, __pyx_L1_error)
+        }
+        break;
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+    }
+    __Pyx_XDECREF_SET(__pyx_v__act_in_day, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "MB_Calendar/c_utils.pyx":153
+ *     hour_event_in_day = 0
+ *     for _act_in_day in planner[week][day]:
+ *         if _act_in_day["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
+ *             hour_event_in_day += _act_in_day["duration"]
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ */
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v__act_in_day, __pyx_n_s_text); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 153, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_startswith); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 153, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_6 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
+      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_7);
+      if (likely(__pyx_t_6)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+        __Pyx_INCREF(__pyx_t_6);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_7, function);
+      }
+    }
+    __pyx_t_2 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_6, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_s_);
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 153, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyObject_RichCompare(__pyx_t_2, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 153, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 153, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    if (__pyx_t_1) {
+
+      /* "MB_Calendar/c_utils.pyx":154
+ *     for _act_in_day in planner[week][day]:
+ *         if _act_in_day["text"].startswith("->")==False:
+ *             hour_event_in_day += _act_in_day["duration"]             # <<<<<<<<<<<<<<
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ *     if (activity["text"].startswith("->") and \
+ */
+      __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v__act_in_day, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 154, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_2 = PyNumber_InPlaceAdd(__pyx_v_hour_event_in_day, __pyx_t_7); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF_SET(__pyx_v_hour_event_in_day, __pyx_t_2);
+      __pyx_t_2 = 0;
+
+      /* "MB_Calendar/c_utils.pyx":153
+ *     hour_event_in_day = 0
+ *     for _act_in_day in planner[week][day]:
+ *         if _act_in_day["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
+ *             hour_event_in_day += _act_in_day["duration"]
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ */
+    }
+
+    /* "MB_Calendar/c_utils.pyx":152
+ *       return planner, day, hour_now
+ *     hour_event_in_day = 0
+ *     for _act_in_day in planner[week][day]:             # <<<<<<<<<<<<<<
+ *         if _act_in_day["text"].startswith("->")==False:
+ *             hour_event_in_day += _act_in_day["duration"]
+ */
+  }
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+
+  /* "MB_Calendar/c_utils.pyx":156
+ *             hour_event_in_day += _act_in_day["duration"]
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ *     if (activity["text"].startswith("->") and \             # <<<<<<<<<<<<<<
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+ *         (activity["text"].startswith("->")==False and \
+ */
+  __pyx_t_2 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 156, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_startswith); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 156, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
+    __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_7);
+    if (likely(__pyx_t_2)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+      __Pyx_INCREF(__pyx_t_2);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_7, function);
+    }
+  }
+  __pyx_t_3 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_2, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_s_);
+  __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 156, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 156, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (!__pyx_t_8) {
+    goto __pyx_L9_next_or;
+  } else {
+  }
+
+  /* "MB_Calendar/c_utils.pyx":157
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ *     if (activity["text"].startswith("->") and \
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \             # <<<<<<<<<<<<<<
+ *         (activity["text"].startswith("->")==False and \
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \
+ */
+  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_7 = __Pyx_PyNumber_Float(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyNumber_Add(__pyx_t_7, __pyx_v_hour_now); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_6 = PyNumber_Add(__pyx_t_7, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_3, __pyx_t_6, Py_LT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (!__pyx_t_8) {
+  } else {
+    __pyx_t_1 = __pyx_t_8;
+    goto __pyx_L8_bool_binop_done;
+  }
+  __pyx_L9_next_or:;
+
+  /* "MB_Calendar/c_utils.pyx":158
+ *     if (activity["text"].startswith("->") and \
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+ *         (activity["text"].startswith("->")==False and \             # <<<<<<<<<<<<<<
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \
+ *         (float(activity["duration"])+hour_event_in_day)<=8):
+ */
+  __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_startswith); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = NULL;
+  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_6)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_6);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+    }
+  }
+  __pyx_t_2 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_6, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s_);
+  __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+  if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyObject_RichCompare(__pyx_t_2, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 158, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (__pyx_t_8) {
+  } else {
+    __pyx_t_1 = __pyx_t_8;
+    goto __pyx_L8_bool_binop_done;
+  }
+
+  /* "MB_Calendar/c_utils.pyx":159
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+ *         (activity["text"].startswith("->")==False and \
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \             # <<<<<<<<<<<<<<
+ *         (float(activity["duration"])+hour_event_in_day)<=8):
+ *         # activity in giornata
+ */
+  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = __Pyx_PyNumber_Float(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_3 = PyNumber_Add(__pyx_t_2, __pyx_v_hour_now); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __pyx_t_7 = __Pyx_PyNumber_Divide(__pyx_t_6, __pyx_int_2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = PyNumber_Add(__pyx_t_2, __pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, __pyx_t_6, Py_LT); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 159, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  if (__pyx_t_8) {
+  } else {
+    __pyx_t_1 = __pyx_t_8;
+    goto __pyx_L8_bool_binop_done;
+  }
+
+  /* "MB_Calendar/c_utils.pyx":160
+ *         (activity["text"].startswith("->")==False and \
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \
+ *         (float(activity["duration"])+hour_event_in_day)<=8):             # <<<<<<<<<<<<<<
  *         # activity in giornata
  *         # print("activity in giornata")
  */
-  __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = __Pyx_PyNumber_Float(__pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Add(__pyx_t_2, __pyx_v_hour_now); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyNumber_Add(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyObject_RichCompare(__pyx_t_3, __pyx_t_5, Py_LT); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 151, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+  __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 160, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_6 = __Pyx_PyNumber_Float(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 160, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_7 = PyNumber_Add(__pyx_t_6, __pyx_v_hour_event_in_day); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 160, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_7);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_6 = PyObject_RichCompare(__pyx_t_7, __pyx_int_8, Py_LE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 160, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+  __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 160, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_t_1 = __pyx_t_8;
+  __pyx_L8_bool_binop_done:;
+
+  /* "MB_Calendar/c_utils.pyx":156
+ *             hour_event_in_day += _act_in_day["duration"]
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ *     if (activity["text"].startswith("->") and \             # <<<<<<<<<<<<<<
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+ *         (activity["text"].startswith("->")==False and \
+ */
   if (__pyx_t_1) {
 
-    /* "MB_Calendar/c_utils.pyx":154
+    /* "MB_Calendar/c_utils.pyx":163
  *         # activity in giornata
  *         # print("activity in giornata")
  *         planner[week][day].append(activity)             # <<<<<<<<<<<<<<
  *         hour_now += float(activity["duration"])
- *         if hour_now > END_HOUR_WORKING:
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):
  */
-    __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 154, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_4, __pyx_v_day); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 154, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_5, __pyx_v_activity); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 154, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 163, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_6, __pyx_v_day); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 163, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_7, __pyx_v_activity); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 163, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":155
+    /* "MB_Calendar/c_utils.pyx":164
  *         # print("activity in giornata")
  *         planner[week][day].append(activity)
  *         hour_now += float(activity["duration"])             # <<<<<<<<<<<<<<
- *         if hour_now > END_HOUR_WORKING:
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):
  *           day += 1
  */
-    __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 155, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_PyNumber_Float(__pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 155, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_v_hour_now, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 155, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_5);
-    __pyx_t_5 = 0;
+    __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 164, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_6 = __Pyx_PyNumber_Float(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 164, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyNumber_InPlaceAdd(__pyx_v_hour_now, __pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 164, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_7);
+    __pyx_t_7 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":156
+    /* "MB_Calendar/c_utils.pyx":165
  *         planner[week][day].append(activity)
  *         hour_now += float(activity["duration"])
- *         if hour_now > END_HOUR_WORKING:             # <<<<<<<<<<<<<<
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):             # <<<<<<<<<<<<<<
  *           day += 1
  *           planner[week][day] = []
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 156, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = PyObject_RichCompare(__pyx_v_hour_now, __pyx_t_5, Py_GT); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 156, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 156, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_6 = PyObject_RichCompare(__pyx_v_hour_now, __pyx_t_7, Py_GT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (__pyx_t_8) {
+    } else {
+      __pyx_t_1 = __pyx_t_8;
+      goto __pyx_L14_bool_binop_done;
+    }
+    __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_startswith); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_7)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_7);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
+      }
+    }
+    __pyx_t_6 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_7, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s_);
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 165, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_1 = __pyx_t_8;
+    __pyx_L14_bool_binop_done:;
     if (__pyx_t_1) {
 
-      /* "MB_Calendar/c_utils.pyx":157
+      /* "MB_Calendar/c_utils.pyx":166
  *         hour_now += float(activity["duration"])
- *         if hour_now > END_HOUR_WORKING:
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):
  *           day += 1             # <<<<<<<<<<<<<<
  *           planner[week][day] = []
  *           hour_now = START_HOUR_WORKING
  */
-      __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 157, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_4);
-      __pyx_t_4 = 0;
+      __pyx_t_6 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 166, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_6);
+      __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":158
- *         if hour_now > END_HOUR_WORKING:
+      /* "MB_Calendar/c_utils.pyx":167
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):
  *           day += 1
  *           planner[week][day] = []             # <<<<<<<<<<<<<<
  *           hour_now = START_HOUR_WORKING
  *     else:
  */
-      __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 158, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 158, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      if (unlikely(PyObject_SetItem(__pyx_t_5, __pyx_v_day, __pyx_t_4) < 0)) __PYX_ERR(0, 158, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 167, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 167, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      if (unlikely(PyObject_SetItem(__pyx_t_3, __pyx_v_day, __pyx_t_6) < 0)) __PYX_ERR(0, 167, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":159
+      /* "MB_Calendar/c_utils.pyx":168
  *           day += 1
  *           planner[week][day] = []
  *           hour_now = START_HOUR_WORKING             # <<<<<<<<<<<<<<
  *     else:
  *         # activity non si conclude in giornata
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 159, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_4);
-      __pyx_t_4 = 0;
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 168, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_6);
+      __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":156
+      /* "MB_Calendar/c_utils.pyx":165
  *         planner[week][day].append(activity)
  *         hour_now += float(activity["duration"])
- *         if hour_now > END_HOUR_WORKING:             # <<<<<<<<<<<<<<
+ *         if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):             # <<<<<<<<<<<<<<
  *           day += 1
  *           planner[week][day] = []
  */
     }
 
-    /* "MB_Calendar/c_utils.pyx":151
- *     if bool(activity)==False:
- *       return planner, day, hour_now
- *     if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):             # <<<<<<<<<<<<<<
- *         # activity in giornata
- *         # print("activity in giornata")
+    /* "MB_Calendar/c_utils.pyx":156
+ *             hour_event_in_day += _act_in_day["duration"]
+ *     # print("hour_event_in_day: "+str(hour_event_in_day))
+ *     if (activity["text"].startswith("->") and \             # <<<<<<<<<<<<<<
+ *         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+ *         (activity["text"].startswith("->")==False and \
  */
-    goto __pyx_L4;
+    goto __pyx_L7;
   }
 
-  /* "MB_Calendar/c_utils.pyx":163
+  /* "MB_Calendar/c_utils.pyx":172
  *         # activity non si conclude in giornata
  *         # print("activity non si conclude in giornata")
- *         time_left_today = TOLERATION_TIME+END_HOUR_WORKING - hour_now             # <<<<<<<<<<<<<<
+ *         time_left_today = END_HOUR_WORKING - hour_now             # <<<<<<<<<<<<<<
  *         # split solo se  strada oppure evento in base al modulo 8
  *         # print("split solo se  strada oppure evento in base al modulo 8")
  */
   /*else*/ {
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 163, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 163, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_3 = PyNumber_Add(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 163, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_END_HOUR_WORKING); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 172, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_3 = PyNumber_Subtract(__pyx_t_6, __pyx_v_hour_now); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 172, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyNumber_Subtract(__pyx_t_3, __pyx_v_hour_now); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 163, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_v_time_left_today = __pyx_t_5;
-    __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_v_time_left_today = __pyx_t_3;
+    __pyx_t_3 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":166
+    /* "MB_Calendar/c_utils.pyx":175
  *         # split solo se  strada oppure evento in base al modulo 8
  *         # print("split solo se  strada oppure evento in base al modulo 8")
  *         if activity["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
  *           #  un evento
- *           # print(" un evento")
+ *           time_left_today += (TOLERATION_TIME/2)
  */
-    __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_startswith); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = NULL;
-    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-      __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
-      if (likely(__pyx_t_3)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-        __Pyx_INCREF(__pyx_t_3);
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_startswith); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_6 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
+      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_7);
+      if (likely(__pyx_t_6)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+        __Pyx_INCREF(__pyx_t_6);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_4, function);
+        __Pyx_DECREF_SET(__pyx_t_7, function);
       }
     }
-    __pyx_t_5 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_3, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_s_);
-    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = PyObject_RichCompare(__pyx_t_5, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 166, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __pyx_t_3 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_6, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_kp_s_);
+    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyObject_RichCompare(__pyx_t_3, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_7); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_7); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 175, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     if (__pyx_t_1) {
 
-      /* "MB_Calendar/c_utils.pyx":169
+      /* "MB_Calendar/c_utils.pyx":177
+ *         if activity["text"].startswith("->")==False:
  *           #  un evento
+ *           time_left_today += (TOLERATION_TIME/2)             # <<<<<<<<<<<<<<
+ *           # print(" un evento")
+ *           event_days_of_work = int(activity["duration"]//8)
+ */
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 177, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = __Pyx_PyNumber_Divide(__pyx_t_7, __pyx_int_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 177, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_7 = PyNumber_InPlaceAdd(__pyx_v_time_left_today, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 177, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_time_left_today, __pyx_t_7);
+      __pyx_t_7 = 0;
+
+      /* "MB_Calendar/c_utils.pyx":179
+ *           time_left_today += (TOLERATION_TIME/2)
  *           # print(" un evento")
  *           event_days_of_work = int(activity["duration"]//8)             # <<<<<<<<<<<<<<
  *           # print("event_days_of_work: "+str(event_days_of_work))
  *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
  */
-      __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 169, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyInt_FloorDivideObjC(__pyx_t_4, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 169, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyNumber_Int(__pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 169, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_v_event_days_of_work = __pyx_t_4;
-      __pyx_t_4 = 0;
+      __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 179, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = __Pyx_PyInt_FloorDivideObjC(__pyx_t_7, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 179, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_7 = __Pyx_PyNumber_Int(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 179, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_v_event_days_of_work = __pyx_t_7;
+      __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":171
+      /* "MB_Calendar/c_utils.pyx":181
  *           event_days_of_work = int(activity["duration"]//8)
  *           # print("event_days_of_work: "+str(event_days_of_work))
  *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)             # <<<<<<<<<<<<<<
- *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:
- *               today_activity = activity.copy()
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
  */
-      __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 171, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = PyNumber_Multiply(__pyx_v_event_days_of_work, __pyx_int_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 171, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_3 = PyNumber_Subtract(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 171, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 181, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = PyNumber_Multiply(__pyx_v_event_days_of_work, __pyx_int_8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_v_hours_ev_remaining = __pyx_t_3;
-      __pyx_t_3 = 0;
+      __pyx_t_6 = PyNumber_Subtract(__pyx_t_7, __pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 181, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_v_hours_ev_remaining = __pyx_t_6;
+      __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":172
+      /* "MB_Calendar/c_utils.pyx":182
  *           # print("event_days_of_work: "+str(event_days_of_work))
  *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
- *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:             # <<<<<<<<<<<<<<
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \             # <<<<<<<<<<<<<<
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
  *               today_activity = activity.copy()
- *               today_activity["duration"] = hours_ev_remaining
  */
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_v_time_left_today, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 172, __pyx_L1_error)
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 172, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (__pyx_t_7) {
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_v_time_left_today, Py_LE); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (__pyx_t_8) {
       } else {
-        __pyx_t_1 = __pyx_t_7;
-        goto __pyx_L8_bool_binop_done;
+        __pyx_t_1 = __pyx_t_8;
+        goto __pyx_L18_bool_binop_done;
       }
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 172, __pyx_L1_error)
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 172, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (__pyx_t_7) {
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 182, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (__pyx_t_8) {
       } else {
-        __pyx_t_1 = __pyx_t_7;
-        goto __pyx_L8_bool_binop_done;
+        __pyx_t_1 = __pyx_t_8;
+        goto __pyx_L18_bool_binop_done;
       }
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_time_left_today, __pyx_int_8, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 172, __pyx_L1_error)
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 172, __pyx_L1_error)
+
+      /* "MB_Calendar/c_utils.pyx":183
+ *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:             # <<<<<<<<<<<<<<
+ *               today_activity = activity.copy()
+ *               today_activity["duration"] = time_left_today
+ */
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_time_left_today, __pyx_int_8, Py_LT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 183, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 183, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (__pyx_t_8) {
+      } else {
+        __pyx_t_1 = __pyx_t_8;
+        goto __pyx_L18_bool_binop_done;
+      }
+      __pyx_t_6 = PyNumber_Add(__pyx_v_hours_ev_remaining, __pyx_v_hour_event_in_day); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 183, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_6, __pyx_int_8, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 183, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 183, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_1 = __pyx_t_7;
-      __pyx_L8_bool_binop_done:;
+      __pyx_t_1 = __pyx_t_8;
+      __pyx_L18_bool_binop_done:;
+
+      /* "MB_Calendar/c_utils.pyx":182
+ *           # print("event_days_of_work: "+str(event_days_of_work))
+ *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \             # <<<<<<<<<<<<<<
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
+ *               today_activity = activity.copy()
+ */
       if (__pyx_t_1) {
 
-        /* "MB_Calendar/c_utils.pyx":173
- *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
- *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:
+        /* "MB_Calendar/c_utils.pyx":184
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
  *               today_activity = activity.copy()             # <<<<<<<<<<<<<<
- *               today_activity["duration"] = hours_ev_remaining
+ *               today_activity["duration"] = time_left_today
  *               planner[week][day].append(today_activity)
  */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 173, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_4 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
-          __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_5);
-          if (likely(__pyx_t_4)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-            __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 184, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_7 = NULL;
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
+          __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_6);
+          if (likely(__pyx_t_7)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
+            __Pyx_INCREF(__pyx_t_7);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_5, function);
+            __Pyx_DECREF_SET(__pyx_t_6, function);
           }
         }
-        __pyx_t_3 = (__pyx_t_4) ? __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_4) : __Pyx_PyObject_CallNoArg(__pyx_t_5);
-        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 173, __pyx_L1_error)
+        __pyx_t_3 = (__pyx_t_7) ? __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_7) : __Pyx_PyObject_CallNoArg(__pyx_t_6);
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __pyx_v_today_activity = __pyx_t_3;
         __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":174
- *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:
+        /* "MB_Calendar/c_utils.pyx":185
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
  *               today_activity = activity.copy()
- *               today_activity["duration"] = hours_ev_remaining             # <<<<<<<<<<<<<<
+ *               today_activity["duration"] = time_left_today             # <<<<<<<<<<<<<<
  *               planner[week][day].append(today_activity)
- *               hours_ev_remaining = 0
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
  */
-        if (unlikely(PyObject_SetItem(__pyx_v_today_activity, __pyx_n_s_duration, __pyx_v_hours_ev_remaining) < 0)) __PYX_ERR(0, 174, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v_today_activity, __pyx_n_s_duration, __pyx_v_time_left_today) < 0)) __PYX_ERR(0, 185, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":175
+        /* "MB_Calendar/c_utils.pyx":186
  *               today_activity = activity.copy()
- *               today_activity["duration"] = hours_ev_remaining
+ *               today_activity["duration"] = time_left_today
  *               planner[week][day].append(today_activity)             # <<<<<<<<<<<<<<
- *               hours_ev_remaining = 0
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
+ *               event_days_of_work -= 1
+ */
+        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 186, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_6, __pyx_v_today_activity); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 186, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+        /* "MB_Calendar/c_utils.pyx":187
+ *               today_activity["duration"] = time_left_today
+ *               planner[week][day].append(today_activity)
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)             # <<<<<<<<<<<<<<
+ *               event_days_of_work -= 1
  *           elif event_days_of_work>=1 and time_left_today>=8:
  */
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 175, __pyx_L1_error)
+        __pyx_t_6 = PyNumber_Subtract(__pyx_v_time_left_today, __pyx_v_hours_ev_remaining); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 187, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_3 = __Pyx_PyInt_SubtractCObj(__pyx_int_8, __pyx_t_6, 8, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 187, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 175, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_5, __pyx_v_today_activity); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 175, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_DECREF_SET(__pyx_v_hours_ev_remaining, __pyx_t_3);
+        __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":176
- *               today_activity["duration"] = hours_ev_remaining
+        /* "MB_Calendar/c_utils.pyx":188
  *               planner[week][day].append(today_activity)
- *               hours_ev_remaining = 0             # <<<<<<<<<<<<<<
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
+ *               event_days_of_work -= 1             # <<<<<<<<<<<<<<
  *           elif event_days_of_work>=1 and time_left_today>=8:
  *               today_activity = activity.copy()
  */
-        __Pyx_INCREF(__pyx_int_0);
-        __Pyx_DECREF_SET(__pyx_v_hours_ev_remaining, __pyx_int_0);
+        __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_event_days_of_work, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 188, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF_SET(__pyx_v_event_days_of_work, __pyx_t_3);
+        __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":172
+        /* "MB_Calendar/c_utils.pyx":182
  *           # print("event_days_of_work: "+str(event_days_of_work))
  *           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
- *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:             # <<<<<<<<<<<<<<
+ *           if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \             # <<<<<<<<<<<<<<
+ *              time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
  *               today_activity = activity.copy()
- *               today_activity["duration"] = hours_ev_remaining
  */
-        goto __pyx_L7;
+        goto __pyx_L17;
       }
 
-      /* "MB_Calendar/c_utils.pyx":177
- *               planner[week][day].append(today_activity)
- *               hours_ev_remaining = 0
+      /* "MB_Calendar/c_utils.pyx":189
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
+ *               event_days_of_work -= 1
  *           elif event_days_of_work>=1 and time_left_today>=8:             # <<<<<<<<<<<<<<
  *               today_activity = activity.copy()
  *               today_activity["duration"] = 8
  */
-      __pyx_t_5 = PyObject_RichCompare(__pyx_v_event_days_of_work, __pyx_int_1, Py_GE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 177, __pyx_L1_error)
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 177, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (__pyx_t_7) {
+      __pyx_t_3 = PyObject_RichCompare(__pyx_v_event_days_of_work, __pyx_int_1, Py_GE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (__pyx_t_8) {
       } else {
-        __pyx_t_1 = __pyx_t_7;
-        goto __pyx_L11_bool_binop_done;
+        __pyx_t_1 = __pyx_t_8;
+        goto __pyx_L22_bool_binop_done;
       }
-      __pyx_t_5 = PyObject_RichCompare(__pyx_v_time_left_today, __pyx_int_8, Py_GE); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 177, __pyx_L1_error)
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 177, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_1 = __pyx_t_7;
-      __pyx_L11_bool_binop_done:;
+      __pyx_t_3 = PyObject_RichCompare(__pyx_v_time_left_today, __pyx_int_8, Py_GE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 189, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_1 = __pyx_t_8;
+      __pyx_L22_bool_binop_done:;
       if (__pyx_t_1) {
 
-        /* "MB_Calendar/c_utils.pyx":178
- *               hours_ev_remaining = 0
+        /* "MB_Calendar/c_utils.pyx":190
+ *               event_days_of_work -= 1
  *           elif event_days_of_work>=1 and time_left_today>=8:
  *               today_activity = activity.copy()             # <<<<<<<<<<<<<<
  *               today_activity["duration"] = 8
  *               planner[week][day].append(today_activity)
  */
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 178, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
-          __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-          if (likely(__pyx_t_4)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-            __Pyx_INCREF(__pyx_t_4);
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 190, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_7 = NULL;
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
+          __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_6);
+          if (likely(__pyx_t_7)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
+            __Pyx_INCREF(__pyx_t_7);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_3, function);
+            __Pyx_DECREF_SET(__pyx_t_6, function);
           }
         }
-        __pyx_t_5 = (__pyx_t_4) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
-        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 178, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_v_today_activity = __pyx_t_5;
-        __pyx_t_5 = 0;
+        __pyx_t_3 = (__pyx_t_7) ? __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_7) : __Pyx_PyObject_CallNoArg(__pyx_t_6);
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 190, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __pyx_v_today_activity = __pyx_t_3;
+        __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":179
+        /* "MB_Calendar/c_utils.pyx":191
  *           elif event_days_of_work>=1 and time_left_today>=8:
  *               today_activity = activity.copy()
  *               today_activity["duration"] = 8             # <<<<<<<<<<<<<<
  *               planner[week][day].append(today_activity)
  *               event_days_of_work -= 1
  */
-        if (unlikely(PyObject_SetItem(__pyx_v_today_activity, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 179, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v_today_activity, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 191, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":180
+        /* "MB_Calendar/c_utils.pyx":192
  *               today_activity = activity.copy()
  *               today_activity["duration"] = 8
  *               planner[week][day].append(today_activity)             # <<<<<<<<<<<<<<
  *               event_days_of_work -= 1
  *           day += 1
  */
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 180, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_day); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 180, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 192, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_today_activity); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 180, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 192, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_6, __pyx_v_today_activity); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 192, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":181
+        /* "MB_Calendar/c_utils.pyx":193
  *               today_activity["duration"] = 8
  *               planner[week][day].append(today_activity)
  *               event_days_of_work -= 1             # <<<<<<<<<<<<<<
  *           day += 1
  *           planner[week][day] = []
  */
-        __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_event_days_of_work, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 181, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF_SET(__pyx_v_event_days_of_work, __pyx_t_3);
-        __pyx_t_3 = 0;
+        __pyx_t_6 = __Pyx_PyInt_SubtractObjC(__pyx_v_event_days_of_work, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 193, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF_SET(__pyx_v_event_days_of_work, __pyx_t_6);
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":177
- *               planner[week][day].append(today_activity)
- *               hours_ev_remaining = 0
+        /* "MB_Calendar/c_utils.pyx":189
+ *               hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
+ *               event_days_of_work -= 1
  *           elif event_days_of_work>=1 and time_left_today>=8:             # <<<<<<<<<<<<<<
  *               today_activity = activity.copy()
  *               today_activity["duration"] = 8
  */
       }
-      __pyx_L7:;
+      __pyx_L17:;
 
-      /* "MB_Calendar/c_utils.pyx":182
+      /* "MB_Calendar/c_utils.pyx":194
  *               planner[week][day].append(today_activity)
  *               event_days_of_work -= 1
  *           day += 1             # <<<<<<<<<<<<<<
  *           planner[week][day] = []
  *           for _d in range(event_days_of_work):
  */
-      __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 182, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_3);
-      __pyx_t_3 = 0;
+      __pyx_t_6 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 194, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_6);
+      __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":183
+      /* "MB_Calendar/c_utils.pyx":195
  *               event_days_of_work -= 1
  *           day += 1
  *           planner[week][day] = []             # <<<<<<<<<<<<<<
  *           for _d in range(event_days_of_work):
  *               _act = activity.copy()
  */
-      __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 183, __pyx_L1_error)
+      __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 195, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 195, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 183, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      if (unlikely(PyObject_SetItem(__pyx_t_5, __pyx_v_day, __pyx_t_3) < 0)) __PYX_ERR(0, 183, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      if (unlikely(PyObject_SetItem(__pyx_t_3, __pyx_v_day, __pyx_t_6) < 0)) __PYX_ERR(0, 195, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":184
+      /* "MB_Calendar/c_utils.pyx":196
  *           day += 1
  *           planner[week][day] = []
  *           for _d in range(event_days_of_work):             # <<<<<<<<<<<<<<
  *               _act = activity.copy()
  *               _act["duration"] = 8
  */
-      __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_range, __pyx_v_event_days_of_work); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
-        __pyx_t_5 = __pyx_t_3; __Pyx_INCREF(__pyx_t_5); __pyx_t_8 = 0;
-        __pyx_t_9 = NULL;
+      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_range, __pyx_v_event_days_of_work); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 196, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      if (likely(PyList_CheckExact(__pyx_t_6)) || PyTuple_CheckExact(__pyx_t_6)) {
+        __pyx_t_3 = __pyx_t_6; __Pyx_INCREF(__pyx_t_3); __pyx_t_4 = 0;
+        __pyx_t_5 = NULL;
       } else {
-        __pyx_t_8 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 184, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_9 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 184, __pyx_L1_error)
+        __pyx_t_4 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 196, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_5 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 196, __pyx_L1_error)
       }
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       for (;;) {
-        if (likely(!__pyx_t_9)) {
-          if (likely(PyList_CheckExact(__pyx_t_5))) {
-            if (__pyx_t_8 >= PyList_GET_SIZE(__pyx_t_5)) break;
+        if (likely(!__pyx_t_5)) {
+          if (likely(PyList_CheckExact(__pyx_t_3))) {
+            if (__pyx_t_4 >= PyList_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_3 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_3); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 184, __pyx_L1_error)
+            __pyx_t_6 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 196, __pyx_L1_error)
             #else
-            __pyx_t_3 = PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
-            __Pyx_GOTREF(__pyx_t_3);
+            __pyx_t_6 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 196, __pyx_L1_error)
+            __Pyx_GOTREF(__pyx_t_6);
             #endif
           } else {
-            if (__pyx_t_8 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
+            if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_8); __Pyx_INCREF(__pyx_t_3); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 184, __pyx_L1_error)
+            __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 196, __pyx_L1_error)
             #else
-            __pyx_t_3 = PySequence_ITEM(__pyx_t_5, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 184, __pyx_L1_error)
-            __Pyx_GOTREF(__pyx_t_3);
+            __pyx_t_6 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 196, __pyx_L1_error)
+            __Pyx_GOTREF(__pyx_t_6);
             #endif
           }
         } else {
-          __pyx_t_3 = __pyx_t_9(__pyx_t_5);
-          if (unlikely(!__pyx_t_3)) {
+          __pyx_t_6 = __pyx_t_5(__pyx_t_3);
+          if (unlikely(!__pyx_t_6)) {
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 184, __pyx_L1_error)
+              else __PYX_ERR(0, 196, __pyx_L1_error)
             }
             break;
           }
-          __Pyx_GOTREF(__pyx_t_3);
+          __Pyx_GOTREF(__pyx_t_6);
         }
-        __Pyx_XDECREF_SET(__pyx_v__d, __pyx_t_3);
-        __pyx_t_3 = 0;
+        __Pyx_XDECREF_SET(__pyx_v__d, __pyx_t_6);
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":185
+        /* "MB_Calendar/c_utils.pyx":197
  *           planner[week][day] = []
  *           for _d in range(event_days_of_work):
  *               _act = activity.copy()             # <<<<<<<<<<<<<<
  *               _act["duration"] = 8
  *               planner[week][day].append(_act)
  */
-        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 185, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
+        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 197, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
         __pyx_t_2 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-          __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_4);
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
+          __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_7);
           if (likely(__pyx_t_2)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
             __Pyx_INCREF(__pyx_t_2);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_4, function);
+            __Pyx_DECREF_SET(__pyx_t_7, function);
           }
         }
-        __pyx_t_3 = (__pyx_t_2) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_2) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
+        __pyx_t_6 = (__pyx_t_2) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_2) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 185, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __Pyx_XDECREF_SET(__pyx_v__act, __pyx_t_3);
-        __pyx_t_3 = 0;
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 197, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_XDECREF_SET(__pyx_v__act, __pyx_t_6);
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":186
+        /* "MB_Calendar/c_utils.pyx":198
  *           for _d in range(event_days_of_work):
  *               _act = activity.copy()
  *               _act["duration"] = 8             # <<<<<<<<<<<<<<
  *               planner[week][day].append(_act)
  *               day += 1
  */
-        if (unlikely(PyObject_SetItem(__pyx_v__act, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 186, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v__act, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 198, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":187
+        /* "MB_Calendar/c_utils.pyx":199
  *               _act = activity.copy()
  *               _act["duration"] = 8
  *               planner[week][day].append(_act)             # <<<<<<<<<<<<<<
  *               day += 1
  *               planner[week][day] = []
  */
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 187, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 187, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_4, __pyx_v__act); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 187, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 199, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_6, __pyx_v_day); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 199, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_7, __pyx_v__act); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 199, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":188
+        /* "MB_Calendar/c_utils.pyx":200
  *               _act["duration"] = 8
  *               planner[week][day].append(_act)
  *               day += 1             # <<<<<<<<<<<<<<
  *               planner[week][day] = []
  *           if hours_ev_remaining>0:
  */
-        __pyx_t_4 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 188, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_4);
-        __pyx_t_4 = 0;
+        __pyx_t_7 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 200, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_7);
+        __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":189
+        /* "MB_Calendar/c_utils.pyx":201
  *               planner[week][day].append(_act)
  *               day += 1
  *               planner[week][day] = []             # <<<<<<<<<<<<<<
  *           if hours_ev_remaining>0:
  *               final_act = activity.copy()
  */
-        __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 189, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        if (unlikely(PyObject_SetItem(__pyx_t_3, __pyx_v_day, __pyx_t_4) < 0)) __PYX_ERR(0, 189, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 201, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 201, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        if (unlikely(PyObject_SetItem(__pyx_t_6, __pyx_v_day, __pyx_t_7) < 0)) __PYX_ERR(0, 201, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":184
+        /* "MB_Calendar/c_utils.pyx":196
  *           day += 1
  *           planner[week][day] = []
  *           for _d in range(event_days_of_work):             # <<<<<<<<<<<<<<
@@ -5069,72 +5444,72 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *               _act["duration"] = 8
  */
       }
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":190
+      /* "MB_Calendar/c_utils.pyx":202
  *               day += 1
  *               planner[week][day] = []
  *           if hours_ev_remaining>0:             # <<<<<<<<<<<<<<
  *               final_act = activity.copy()
  *               final_act["duration"] = hours_ev_remaining
  */
-      __pyx_t_5 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 190, __pyx_L1_error)
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 190, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_3 = PyObject_RichCompare(__pyx_v_hours_ev_remaining, __pyx_int_0, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 202, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 202, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_1) {
 
-        /* "MB_Calendar/c_utils.pyx":191
+        /* "MB_Calendar/c_utils.pyx":203
  *               planner[week][day] = []
  *           if hours_ev_remaining>0:
  *               final_act = activity.copy()             # <<<<<<<<<<<<<<
  *               final_act["duration"] = hours_ev_remaining
  *               planner[week][day].append(final_act)
  */
-        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 191, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_3 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-          __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
-          if (likely(__pyx_t_3)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-            __Pyx_INCREF(__pyx_t_3);
+        __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 203, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_6 = NULL;
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
+          __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_7);
+          if (likely(__pyx_t_6)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+            __Pyx_INCREF(__pyx_t_6);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_4, function);
+            __Pyx_DECREF_SET(__pyx_t_7, function);
           }
         }
-        __pyx_t_5 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
-        __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 191, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_v_final_act = __pyx_t_5;
-        __pyx_t_5 = 0;
+        __pyx_t_3 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
+        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 203, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __pyx_v_final_act = __pyx_t_3;
+        __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":192
+        /* "MB_Calendar/c_utils.pyx":204
  *           if hours_ev_remaining>0:
  *               final_act = activity.copy()
  *               final_act["duration"] = hours_ev_remaining             # <<<<<<<<<<<<<<
  *               planner[week][day].append(final_act)
  *           hour_now = START_HOUR_WORKING + hours_ev_remaining
  */
-        if (unlikely(PyObject_SetItem(__pyx_v_final_act, __pyx_n_s_duration, __pyx_v_hours_ev_remaining) < 0)) __PYX_ERR(0, 192, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v_final_act, __pyx_n_s_duration, __pyx_v_hours_ev_remaining) < 0)) __PYX_ERR(0, 204, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":193
+        /* "MB_Calendar/c_utils.pyx":205
  *               final_act = activity.copy()
  *               final_act["duration"] = hours_ev_remaining
  *               planner[week][day].append(final_act)             # <<<<<<<<<<<<<<
  *           hour_now = START_HOUR_WORKING + hours_ev_remaining
  *         else:
  */
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 193, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_day); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 193, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_4, __pyx_v_final_act); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 193, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 205, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 205, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_7, __pyx_v_final_act); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 205, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":190
+        /* "MB_Calendar/c_utils.pyx":202
  *               day += 1
  *               planner[week][day] = []
  *           if hours_ev_remaining>0:             # <<<<<<<<<<<<<<
@@ -5143,286 +5518,301 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  */
       }
 
-      /* "MB_Calendar/c_utils.pyx":194
+      /* "MB_Calendar/c_utils.pyx":206
  *               final_act["duration"] = hours_ev_remaining
  *               planner[week][day].append(final_act)
  *           hour_now = START_HOUR_WORKING + hours_ev_remaining             # <<<<<<<<<<<<<<
  *         else:
  *           # strada che non si conclude in giornata
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 194, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = PyNumber_Add(__pyx_t_4, __pyx_v_hours_ev_remaining); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 194, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_5);
-      __pyx_t_5 = 0;
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 206, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = PyNumber_Add(__pyx_t_7, __pyx_v_hours_ev_remaining); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 206, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_3);
+      __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":166
+      /* "MB_Calendar/c_utils.pyx":175
  *         # split solo se  strada oppure evento in base al modulo 8
  *         # print("split solo se  strada oppure evento in base al modulo 8")
  *         if activity["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
  *           #  un evento
- *           # print(" un evento")
+ *           time_left_today += (TOLERATION_TIME/2)
  */
-      goto __pyx_L6;
+      goto __pyx_L16;
     }
 
-    /* "MB_Calendar/c_utils.pyx":198
+    /* "MB_Calendar/c_utils.pyx":210
  *           # strada che non si conclude in giornata
- *           # # print("strada che non si conclude in giornata")
+ *           # print("strada che non si conclude in giornata")
+ *           time_left_today += TOLERATION_TIME             # <<<<<<<<<<<<<<
+ *           activity_today = activity.copy()
+ *           activity_today["duration"] = time_left_today
+ */
+    /*else*/ {
+      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 210, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_7 = PyNumber_InPlaceAdd(__pyx_v_time_left_today, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 210, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF_SET(__pyx_v_time_left_today, __pyx_t_7);
+      __pyx_t_7 = 0;
+
+      /* "MB_Calendar/c_utils.pyx":211
+ *           # print("strada che non si conclude in giornata")
+ *           time_left_today += TOLERATION_TIME
  *           activity_today = activity.copy()             # <<<<<<<<<<<<<<
  *           activity_today["duration"] = time_left_today
  *           planner[week][day].append(activity_today)
  */
-    /*else*/ {
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 198, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = NULL;
-      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-        __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_4);
-        if (likely(__pyx_t_3)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-          __Pyx_INCREF(__pyx_t_3);
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_6 = NULL;
+      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_6)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_6);
           __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_4, function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
         }
       }
-      __pyx_t_5 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
-      __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 198, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_v_activity_today = __pyx_t_5;
-      __pyx_t_5 = 0;
+      __pyx_t_7 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
+      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+      if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 211, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_v_activity_today = __pyx_t_7;
+      __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":199
- *           # # print("strada che non si conclude in giornata")
+      /* "MB_Calendar/c_utils.pyx":212
+ *           time_left_today += TOLERATION_TIME
  *           activity_today = activity.copy()
  *           activity_today["duration"] = time_left_today             # <<<<<<<<<<<<<<
  *           planner[week][day].append(activity_today)
  *           time_still_needed = float(activity["duration"]) - time_left_today
  */
-      if (unlikely(PyObject_SetItem(__pyx_v_activity_today, __pyx_n_s_duration, __pyx_v_time_left_today) < 0)) __PYX_ERR(0, 199, __pyx_L1_error)
+      if (unlikely(PyObject_SetItem(__pyx_v_activity_today, __pyx_n_s_duration, __pyx_v_time_left_today) < 0)) __PYX_ERR(0, 212, __pyx_L1_error)
 
-      /* "MB_Calendar/c_utils.pyx":200
+      /* "MB_Calendar/c_utils.pyx":213
  *           activity_today = activity.copy()
  *           activity_today["duration"] = time_left_today
  *           planner[week][day].append(activity_today)             # <<<<<<<<<<<<<<
  *           time_still_needed = float(activity["duration"]) - time_left_today
  *           days_of_activity_after_today = int(time_still_needed // 8)
  */
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 200, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_day); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 200, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_4, __pyx_v_activity_today); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 200, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 213, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_7, __pyx_v_day); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 213, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_activity_today); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 213, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":201
+      /* "MB_Calendar/c_utils.pyx":214
  *           activity_today["duration"] = time_left_today
  *           planner[week][day].append(activity_today)
  *           time_still_needed = float(activity["duration"]) - time_left_today             # <<<<<<<<<<<<<<
  *           days_of_activity_after_today = int(time_still_needed // 8)
  *           time_left_last_day = time_still_needed % 8
  */
-      __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 201, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyNumber_Float(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 201, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = PyNumber_Subtract(__pyx_t_5, __pyx_v_time_left_today); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 201, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_v_time_still_needed = __pyx_t_4;
-      __pyx_t_4 = 0;
+      __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_7 = __Pyx_PyNumber_Float(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_3 = PyNumber_Subtract(__pyx_t_7, __pyx_v_time_left_today); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 214, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_v_time_still_needed = __pyx_t_3;
+      __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":202
+      /* "MB_Calendar/c_utils.pyx":215
  *           planner[week][day].append(activity_today)
  *           time_still_needed = float(activity["duration"]) - time_left_today
  *           days_of_activity_after_today = int(time_still_needed // 8)             # <<<<<<<<<<<<<<
  *           time_left_last_day = time_still_needed % 8
  *           day += 1
  */
-      __pyx_t_4 = __Pyx_PyInt_FloorDivideObjC(__pyx_v_time_still_needed, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 202, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyNumber_Int(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 202, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_v_days_of_activity_after_today = __pyx_t_5;
-      __pyx_t_5 = 0;
+      __pyx_t_3 = __Pyx_PyInt_FloorDivideObjC(__pyx_v_time_still_needed, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 215, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_7 = __Pyx_PyNumber_Int(__pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 215, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_v_days_of_activity_after_today = __pyx_t_7;
+      __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":203
+      /* "MB_Calendar/c_utils.pyx":216
  *           time_still_needed = float(activity["duration"]) - time_left_today
  *           days_of_activity_after_today = int(time_still_needed // 8)
  *           time_left_last_day = time_still_needed % 8             # <<<<<<<<<<<<<<
  *           day += 1
  *           planner[week][day] = []
  */
-      __pyx_t_5 = __Pyx_PyInt_RemainderObjC(__pyx_v_time_still_needed, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 203, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_v_time_left_last_day = __pyx_t_5;
-      __pyx_t_5 = 0;
+      __pyx_t_7 = __Pyx_PyInt_RemainderObjC(__pyx_v_time_still_needed, __pyx_int_8, 8, 0, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 216, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_v_time_left_last_day = __pyx_t_7;
+      __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":204
+      /* "MB_Calendar/c_utils.pyx":217
  *           days_of_activity_after_today = int(time_still_needed // 8)
  *           time_left_last_day = time_still_needed % 8
  *           day += 1             # <<<<<<<<<<<<<<
  *           planner[week][day] = []
  *           for _d in range(days_of_activity_after_today):
  */
-      __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 204, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_5);
-      __pyx_t_5 = 0;
+      __pyx_t_7 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 217, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_7);
+      __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":205
+      /* "MB_Calendar/c_utils.pyx":218
  *           time_left_last_day = time_still_needed % 8
  *           day += 1
  *           planner[week][day] = []             # <<<<<<<<<<<<<<
  *           for _d in range(days_of_activity_after_today):
  *               activity_helper = activity.copy()
  */
-      __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 205, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 205, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_v_day, __pyx_t_5) < 0)) __PYX_ERR(0, 205, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_7 = PyList_New(0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 218, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 218, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      if (unlikely(PyObject_SetItem(__pyx_t_3, __pyx_v_day, __pyx_t_7) < 0)) __PYX_ERR(0, 218, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":206
+      /* "MB_Calendar/c_utils.pyx":219
  *           day += 1
  *           planner[week][day] = []
  *           for _d in range(days_of_activity_after_today):             # <<<<<<<<<<<<<<
  *               activity_helper = activity.copy()
  *               activity_helper["duration"] = 8
  */
-      __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_range, __pyx_v_days_of_activity_after_today); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 206, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      if (likely(PyList_CheckExact(__pyx_t_5)) || PyTuple_CheckExact(__pyx_t_5)) {
-        __pyx_t_4 = __pyx_t_5; __Pyx_INCREF(__pyx_t_4); __pyx_t_8 = 0;
-        __pyx_t_9 = NULL;
+      __pyx_t_7 = __Pyx_PyObject_CallOneArg(__pyx_builtin_range, __pyx_v_days_of_activity_after_today); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      if (likely(PyList_CheckExact(__pyx_t_7)) || PyTuple_CheckExact(__pyx_t_7)) {
+        __pyx_t_3 = __pyx_t_7; __Pyx_INCREF(__pyx_t_3); __pyx_t_4 = 0;
+        __pyx_t_5 = NULL;
       } else {
-        __pyx_t_8 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 206, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_9 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 206, __pyx_L1_error)
+        __pyx_t_4 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 219, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_5 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 219, __pyx_L1_error)
       }
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       for (;;) {
-        if (likely(!__pyx_t_9)) {
-          if (likely(PyList_CheckExact(__pyx_t_4))) {
-            if (__pyx_t_8 >= PyList_GET_SIZE(__pyx_t_4)) break;
+        if (likely(!__pyx_t_5)) {
+          if (likely(PyList_CheckExact(__pyx_t_3))) {
+            if (__pyx_t_4 >= PyList_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_5 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_8); __Pyx_INCREF(__pyx_t_5); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 206, __pyx_L1_error)
+            __pyx_t_7 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_7); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 219, __pyx_L1_error)
             #else
-            __pyx_t_5 = PySequence_ITEM(__pyx_t_4, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 206, __pyx_L1_error)
-            __Pyx_GOTREF(__pyx_t_5);
+            __pyx_t_7 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L1_error)
+            __Pyx_GOTREF(__pyx_t_7);
             #endif
           } else {
-            if (__pyx_t_8 >= PyTuple_GET_SIZE(__pyx_t_4)) break;
+            if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_8); __Pyx_INCREF(__pyx_t_5); __pyx_t_8++; if (unlikely(0 < 0)) __PYX_ERR(0, 206, __pyx_L1_error)
+            __pyx_t_7 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_4); __Pyx_INCREF(__pyx_t_7); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 219, __pyx_L1_error)
             #else
-            __pyx_t_5 = PySequence_ITEM(__pyx_t_4, __pyx_t_8); __pyx_t_8++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 206, __pyx_L1_error)
-            __Pyx_GOTREF(__pyx_t_5);
+            __pyx_t_7 = PySequence_ITEM(__pyx_t_3, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 219, __pyx_L1_error)
+            __Pyx_GOTREF(__pyx_t_7);
             #endif
           }
         } else {
-          __pyx_t_5 = __pyx_t_9(__pyx_t_4);
-          if (unlikely(!__pyx_t_5)) {
+          __pyx_t_7 = __pyx_t_5(__pyx_t_3);
+          if (unlikely(!__pyx_t_7)) {
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 206, __pyx_L1_error)
+              else __PYX_ERR(0, 219, __pyx_L1_error)
             }
             break;
           }
-          __Pyx_GOTREF(__pyx_t_5);
+          __Pyx_GOTREF(__pyx_t_7);
         }
-        __Pyx_XDECREF_SET(__pyx_v__d, __pyx_t_5);
-        __pyx_t_5 = 0;
+        __Pyx_XDECREF_SET(__pyx_v__d, __pyx_t_7);
+        __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":207
+        /* "MB_Calendar/c_utils.pyx":220
  *           planner[week][day] = []
  *           for _d in range(days_of_activity_after_today):
  *               activity_helper = activity.copy()             # <<<<<<<<<<<<<<
  *               activity_helper["duration"] = 8
  *               planner[week][day].append(activity_helper)
  */
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 207, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 220, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
         __pyx_t_2 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
-          __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_3);
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
+          __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_6);
           if (likely(__pyx_t_2)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
             __Pyx_INCREF(__pyx_t_2);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_3, function);
+            __Pyx_DECREF_SET(__pyx_t_6, function);
           }
         }
-        __pyx_t_5 = (__pyx_t_2) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
+        __pyx_t_7 = (__pyx_t_2) ? __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_2) : __Pyx_PyObject_CallNoArg(__pyx_t_6);
         __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 207, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_XDECREF_SET(__pyx_v_activity_helper, __pyx_t_5);
-        __pyx_t_5 = 0;
+        if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 220, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_XDECREF_SET(__pyx_v_activity_helper, __pyx_t_7);
+        __pyx_t_7 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":208
+        /* "MB_Calendar/c_utils.pyx":221
  *           for _d in range(days_of_activity_after_today):
  *               activity_helper = activity.copy()
  *               activity_helper["duration"] = 8             # <<<<<<<<<<<<<<
  *               planner[week][day].append(activity_helper)
  *               day += 1
  */
-        if (unlikely(PyObject_SetItem(__pyx_v_activity_helper, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 208, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v_activity_helper, __pyx_n_s_duration, __pyx_int_8) < 0)) __PYX_ERR(0, 221, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":209
+        /* "MB_Calendar/c_utils.pyx":222
  *               activity_helper = activity.copy()
  *               activity_helper["duration"] = 8
  *               planner[week][day].append(activity_helper)             # <<<<<<<<<<<<<<
  *               day += 1
  *               planner[week][day] = []
  */
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 209, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_day); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_activity_helper); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 209, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 222, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_t_7, __pyx_v_day); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 222, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_6, __pyx_v_activity_helper); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 222, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":210
+        /* "MB_Calendar/c_utils.pyx":223
  *               activity_helper["duration"] = 8
  *               planner[week][day].append(activity_helper)
  *               day += 1             # <<<<<<<<<<<<<<
  *               planner[week][day] = []
  * 
  */
-        __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 210, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_3);
-        __pyx_t_3 = 0;
+        __pyx_t_6 = __Pyx_PyInt_AddObjC(__pyx_v_day, __pyx_int_1, 1, 1, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 223, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_6);
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":211
+        /* "MB_Calendar/c_utils.pyx":224
  *               planner[week][day].append(activity_helper)
  *               day += 1
  *               planner[week][day] = []             # <<<<<<<<<<<<<<
  * 
  *           if time_left_last_day>TOLERATION_TIME:
  */
-        __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 211, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        if (unlikely(PyObject_SetItem(__pyx_t_5, __pyx_v_day, __pyx_t_3) < 0)) __PYX_ERR(0, 211, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_6 = PyList_New(0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 224, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 224, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        if (unlikely(PyObject_SetItem(__pyx_t_7, __pyx_v_day, __pyx_t_6) < 0)) __PYX_ERR(0, 224, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":206
+        /* "MB_Calendar/c_utils.pyx":219
  *           day += 1
  *           planner[week][day] = []
  *           for _d in range(days_of_activity_after_today):             # <<<<<<<<<<<<<<
@@ -5430,100 +5820,100 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *               activity_helper["duration"] = 8
  */
       }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":213
+      /* "MB_Calendar/c_utils.pyx":226
  *               planner[week][day] = []
  * 
  *           if time_left_last_day>TOLERATION_TIME:             # <<<<<<<<<<<<<<
  *               final_activity = activity.copy()
  *               final_activity["duration"] = time_left_last_day
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 213, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_time_left_last_day, __pyx_t_4, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 213, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 213, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_TOLERATION_TIME); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 226, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __pyx_t_6 = PyObject_RichCompare(__pyx_v_time_left_last_day, __pyx_t_3, Py_GT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 226, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 226, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       if (__pyx_t_1) {
 
-        /* "MB_Calendar/c_utils.pyx":214
+        /* "MB_Calendar/c_utils.pyx":227
  * 
  *           if time_left_last_day>TOLERATION_TIME:
  *               final_activity = activity.copy()             # <<<<<<<<<<<<<<
  *               final_activity["duration"] = time_left_last_day
  *               planner[week][day].append(final_activity)
  */
-        __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 214, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_5 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
-          __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
-          if (likely(__pyx_t_5)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-            __Pyx_INCREF(__pyx_t_5);
+        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_activity, __pyx_n_s_copy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 227, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_7 = NULL;
+        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
+          __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_3);
+          if (likely(__pyx_t_7)) {
+            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+            __Pyx_INCREF(__pyx_t_7);
             __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_4, function);
+            __Pyx_DECREF_SET(__pyx_t_3, function);
           }
         }
-        __pyx_t_3 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
-        __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 214, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_v_final_activity = __pyx_t_3;
-        __pyx_t_3 = 0;
+        __pyx_t_6 = (__pyx_t_7) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_7) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
+        if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 227, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_v_final_activity = __pyx_t_6;
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":215
+        /* "MB_Calendar/c_utils.pyx":228
  *           if time_left_last_day>TOLERATION_TIME:
  *               final_activity = activity.copy()
  *               final_activity["duration"] = time_left_last_day             # <<<<<<<<<<<<<<
  *               planner[week][day].append(final_activity)
  *               hour_now = START_HOUR_WORKING+time_left_last_day
  */
-        if (unlikely(PyObject_SetItem(__pyx_v_final_activity, __pyx_n_s_duration, __pyx_v_time_left_last_day) < 0)) __PYX_ERR(0, 215, __pyx_L1_error)
+        if (unlikely(PyObject_SetItem(__pyx_v_final_activity, __pyx_n_s_duration, __pyx_v_time_left_last_day) < 0)) __PYX_ERR(0, 228, __pyx_L1_error)
 
-        /* "MB_Calendar/c_utils.pyx":216
+        /* "MB_Calendar/c_utils.pyx":229
  *               final_activity = activity.copy()
  *               final_activity["duration"] = time_left_last_day
  *               planner[week][day].append(final_activity)             # <<<<<<<<<<<<<<
  *               hour_now = START_HOUR_WORKING+time_left_last_day
  *           else:
  */
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 216, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 229, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_6, __pyx_v_day); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 229, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 216, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_final_activity); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 229, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_4, __pyx_v_final_activity); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 216, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":217
+        /* "MB_Calendar/c_utils.pyx":230
  *               final_activity["duration"] = time_left_last_day
  *               planner[week][day].append(final_activity)
  *               hour_now = START_HOUR_WORKING+time_left_last_day             # <<<<<<<<<<<<<<
  *           else:
  *               if planner[week][day-1][-1]["text"]==activity["text"]:
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 217, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_3 = PyNumber_Add(__pyx_t_4, __pyx_v_time_left_last_day); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 217, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 230, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_3);
-        __pyx_t_3 = 0;
+        __pyx_t_6 = PyNumber_Add(__pyx_t_3, __pyx_v_time_left_last_day); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 230, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_6);
+        __pyx_t_6 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":213
+        /* "MB_Calendar/c_utils.pyx":226
  *               planner[week][day] = []
  * 
  *           if time_left_last_day>TOLERATION_TIME:             # <<<<<<<<<<<<<<
  *               final_activity = activity.copy()
  *               final_activity["duration"] = time_left_last_day
  */
-        goto __pyx_L18;
+        goto __pyx_L29;
       }
 
-      /* "MB_Calendar/c_utils.pyx":219
+      /* "MB_Calendar/c_utils.pyx":232
  *               hour_now = START_HOUR_WORKING+time_left_last_day
  *           else:
  *               if planner[week][day-1][-1]["text"]==activity["text"]:             # <<<<<<<<<<<<<<
@@ -5531,82 +5921,82 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  * 
  */
       /*else*/ {
-        __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 219, __pyx_L1_error)
+        __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 232, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
+        __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_5, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_n_s_text); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_3 = PyObject_RichCompare(__pyx_t_5, __pyx_t_4, Py_EQ); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 219, __pyx_L1_error)
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 219, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_7, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_t_3, __pyx_n_s_text); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_7);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_3);
+        __pyx_t_6 = PyObject_RichCompare(__pyx_t_7, __pyx_t_3, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 232, __pyx_L1_error)
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
         if (__pyx_t_1) {
 
-          /* "MB_Calendar/c_utils.pyx":220
+          /* "MB_Calendar/c_utils.pyx":233
  *           else:
  *               if planner[week][day-1][-1]["text"]==activity["text"]:
  *                   planner[week][day-1][-1]["duration"] = float(planner[week][day-1][-1]["duration"])+time_left_last_day             # <<<<<<<<<<<<<<
  * 
  *               else:
  */
-          __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 220, __pyx_L1_error)
+          __pyx_t_6 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 233, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_4 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_5);
+          __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-          __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_5, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-          __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_n_s_duration); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_5);
-          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-          __pyx_t_4 = __Pyx_PyNumber_Float(__pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-          __pyx_t_5 = PyNumber_Add(__pyx_t_4, __pyx_v_time_left_last_day); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_5);
-          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-          __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_4);
-          __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 220, __pyx_L1_error)
+          __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_7, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 233, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 220, __pyx_L1_error)
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+          __pyx_t_7 = __Pyx_PyObject_Dict_GetItem(__pyx_t_3, __pyx_n_s_duration); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+          __pyx_t_3 = __Pyx_PyNumber_Float(__pyx_t_7); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_3);
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+          __pyx_t_7 = PyNumber_Add(__pyx_t_3, __pyx_v_time_left_last_day); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+          __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_3);
+          __pyx_t_6 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 233, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
-          __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          __pyx_t_3 = __Pyx_GetItemInt(__pyx_t_2, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_3);
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_2, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-          if (unlikely(PyObject_SetItem(__pyx_t_3, __pyx_n_s_duration, __pyx_t_5) < 0)) __PYX_ERR(0, 220, __pyx_L1_error)
-          __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+          if (unlikely(PyObject_SetItem(__pyx_t_6, __pyx_n_s_duration, __pyx_t_7) < 0)) __PYX_ERR(0, 233, __pyx_L1_error)
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":219
+          /* "MB_Calendar/c_utils.pyx":232
  *               hour_now = START_HOUR_WORKING+time_left_last_day
  *           else:
  *               if planner[week][day-1][-1]["text"]==activity["text"]:             # <<<<<<<<<<<<<<
  *                   planner[week][day-1][-1]["duration"] = float(planner[week][day-1][-1]["duration"])+time_left_last_day
  * 
  */
-          goto __pyx_L19;
+          goto __pyx_L30;
         }
 
-        /* "MB_Calendar/c_utils.pyx":223
+        /* "MB_Calendar/c_utils.pyx":236
  * 
  *               else:
  *                   planner[week][day-1].append(activity)             # <<<<<<<<<<<<<<
@@ -5614,38 +6004,38 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  *               hour_now = START_HOUR_WORKING
  */
         /*else*/ {
-          __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 223, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_3 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 223, __pyx_L1_error)
-          __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 223, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 236, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_7);
+          __pyx_t_6 = __Pyx_PyInt_SubtractObjC(__pyx_v_day, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 236, __pyx_L1_error)
+          __Pyx_GOTREF(__pyx_t_6);
+          __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_7, __pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 236, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
-          __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-          __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-          __pyx_t_6 = __Pyx_PyObject_Append(__pyx_t_2, __pyx_v_activity); if (unlikely(__pyx_t_6 == ((int)-1))) __PYX_ERR(0, 223, __pyx_L1_error)
+          __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+          __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+          __pyx_t_9 = __Pyx_PyObject_Append(__pyx_t_2, __pyx_v_activity); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 236, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         }
-        __pyx_L19:;
+        __pyx_L30:;
 
-        /* "MB_Calendar/c_utils.pyx":225
+        /* "MB_Calendar/c_utils.pyx":238
  *                   planner[week][day-1].append(activity)
  * 
  *               hour_now = START_HOUR_WORKING             # <<<<<<<<<<<<<<
  * 
  *     return planner, day, hour_now
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 225, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 238, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_2);
         __pyx_t_2 = 0;
       }
-      __pyx_L18:;
+      __pyx_L29:;
     }
-    __pyx_L6:;
+    __pyx_L16:;
   }
-  __pyx_L4:;
+  __pyx_L7:;
 
-  /* "MB_Calendar/c_utils.pyx":227
+  /* "MB_Calendar/c_utils.pyx":240
  *               hour_now = START_HOUR_WORKING
  * 
  *     return planner, day, hour_now             # <<<<<<<<<<<<<<
@@ -5653,7 +6043,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = PyTuple_New(3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 227, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 240, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_v_planner);
   __Pyx_GIVEREF(__pyx_v_planner);
@@ -5680,11 +6070,13 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_XDECREF(__pyx_t_7);
   __Pyx_AddTraceback("MB_Calendar.c_utils.add_activity_to_planner_helper", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_hour_event_in_day);
+  __Pyx_XDECREF(__pyx_v__act_in_day);
   __Pyx_XDECREF(__pyx_v_time_left_today);
   __Pyx_XDECREF(__pyx_v_event_days_of_work);
   __Pyx_XDECREF(__pyx_v_hours_ev_remaining);
@@ -5705,7 +6097,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_2add_activity_to_planner_helper
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":231
+/* "MB_Calendar/c_utils.pyx":244
  * 
  * 
  * def format_order_monthly_planner(planner, base):             # <<<<<<<<<<<<<<
@@ -5748,11 +6140,11 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_5format_order_monthly_planner(P
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_base)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("format_order_monthly_planner", 1, 2, 2, 1); __PYX_ERR(0, 231, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("format_order_monthly_planner", 1, 2, 2, 1); __PYX_ERR(0, 244, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "format_order_monthly_planner") < 0)) __PYX_ERR(0, 231, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "format_order_monthly_planner") < 0)) __PYX_ERR(0, 244, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -5765,7 +6157,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_5format_order_monthly_planner(P
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("format_order_monthly_planner", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 231, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("format_order_monthly_planner", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 244, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.format_order_monthly_planner", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5813,19 +6205,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("format_order_monthly_planner", 0);
 
-  /* "MB_Calendar/c_utils.pyx":232
+  /* "MB_Calendar/c_utils.pyx":245
  * 
  * def format_order_monthly_planner(planner, base):
  *     final_planner = {}             # <<<<<<<<<<<<<<
  *     from_loc = base
  * 
  */
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 232, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 245, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_final_planner = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":233
+  /* "MB_Calendar/c_utils.pyx":246
  * def format_order_monthly_planner(planner, base):
  *     final_planner = {}
  *     from_loc = base             # <<<<<<<<<<<<<<
@@ -5835,7 +6227,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
   __Pyx_INCREF(__pyx_v_base);
   __pyx_v_from_loc = __pyx_v_base;
 
-  /* "MB_Calendar/c_utils.pyx":235
+  /* "MB_Calendar/c_utils.pyx":248
  *     from_loc = base
  * 
  *     for week in planner:             # <<<<<<<<<<<<<<
@@ -5846,26 +6238,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
     __pyx_t_1 = __pyx_v_planner; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_planner); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 235, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_planner); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 248, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 235, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 248, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 235, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 248, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 235, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 248, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 235, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 248, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 235, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 248, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -5875,7 +6267,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 235, __pyx_L1_error)
+          else __PYX_ERR(0, 248, __pyx_L1_error)
         }
         break;
       }
@@ -5884,19 +6276,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
     __Pyx_XDECREF_SET(__pyx_v_week, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":236
+    /* "MB_Calendar/c_utils.pyx":249
  * 
  *     for week in planner:
  *         final_planner[week] = []             # <<<<<<<<<<<<<<
  *         trip_splitted = False
  *         for day in planner[week]:
  */
-    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 236, __pyx_L1_error)
+    __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    if (unlikely(PyDict_SetItem(__pyx_v_final_planner, __pyx_v_week, __pyx_t_4) < 0)) __PYX_ERR(0, 236, __pyx_L1_error)
+    if (unlikely(PyDict_SetItem(__pyx_v_final_planner, __pyx_v_week, __pyx_t_4) < 0)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":237
+    /* "MB_Calendar/c_utils.pyx":250
  *     for week in planner:
  *         final_planner[week] = []
  *         trip_splitted = False             # <<<<<<<<<<<<<<
@@ -5905,22 +6297,22 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
  */
     __pyx_v_trip_splitted = 0;
 
-    /* "MB_Calendar/c_utils.pyx":238
+    /* "MB_Calendar/c_utils.pyx":251
  *         final_planner[week] = []
  *         trip_splitted = False
  *         for day in planner[week]:             # <<<<<<<<<<<<<<
  *             hour_now = START_HOUR_WORKING
  *             for act in planner[week][day]:
  */
-    __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     if (likely(PyList_CheckExact(__pyx_t_4)) || PyTuple_CheckExact(__pyx_t_4)) {
       __pyx_t_5 = __pyx_t_4; __Pyx_INCREF(__pyx_t_5); __pyx_t_6 = 0;
       __pyx_t_7 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_6 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 251, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_7 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 238, __pyx_L1_error)
+      __pyx_t_7 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 251, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     for (;;) {
@@ -5928,17 +6320,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         if (likely(PyList_CheckExact(__pyx_t_5))) {
           if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_5)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 238, __pyx_L1_error)
+          __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 251, __pyx_L1_error)
           #else
-          __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+          __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 251, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_4);
           #endif
         } else {
           if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 238, __pyx_L1_error)
+          __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 251, __pyx_L1_error)
           #else
-          __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+          __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 251, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_4);
           #endif
         }
@@ -5948,7 +6340,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 238, __pyx_L1_error)
+            else __PYX_ERR(0, 251, __pyx_L1_error)
           }
           break;
         }
@@ -5957,37 +6349,37 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
       __Pyx_XDECREF_SET(__pyx_v_day, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":239
+      /* "MB_Calendar/c_utils.pyx":252
  *         trip_splitted = False
  *         for day in planner[week]:
  *             hour_now = START_HOUR_WORKING             # <<<<<<<<<<<<<<
  *             for act in planner[week][day]:
  *                 activity = {
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 239, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 252, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_XDECREF_SET(__pyx_v_hour_now, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":240
+      /* "MB_Calendar/c_utils.pyx":253
  *         for day in planner[week]:
  *             hour_now = START_HOUR_WORKING
  *             for act in planner[week][day]:             # <<<<<<<<<<<<<<
  *                 activity = {
  *                     "day": str(day),
  */
-      __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_8 = __Pyx_PyObject_GetItem(__pyx_t_4, __pyx_v_day); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 240, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_GetItem(__pyx_t_4, __pyx_v_day); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 253, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       if (likely(PyList_CheckExact(__pyx_t_8)) || PyTuple_CheckExact(__pyx_t_8)) {
         __pyx_t_4 = __pyx_t_8; __Pyx_INCREF(__pyx_t_4); __pyx_t_9 = 0;
         __pyx_t_10 = NULL;
       } else {
-        __pyx_t_9 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 240, __pyx_L1_error)
+        __pyx_t_9 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 253, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 240, __pyx_L1_error)
+        __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 253, __pyx_L1_error)
       }
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       for (;;) {
@@ -5995,17 +6387,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           if (likely(PyList_CheckExact(__pyx_t_4))) {
             if (__pyx_t_9 >= PyList_GET_SIZE(__pyx_t_4)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_8 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 240, __pyx_L1_error)
+            __pyx_t_8 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 253, __pyx_L1_error)
             #else
-            __pyx_t_8 = PySequence_ITEM(__pyx_t_4, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 240, __pyx_L1_error)
+            __pyx_t_8 = PySequence_ITEM(__pyx_t_4, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 253, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_8);
             #endif
           } else {
             if (__pyx_t_9 >= PyTuple_GET_SIZE(__pyx_t_4)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 240, __pyx_L1_error)
+            __pyx_t_8 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_9); __Pyx_INCREF(__pyx_t_8); __pyx_t_9++; if (unlikely(0 < 0)) __PYX_ERR(0, 253, __pyx_L1_error)
             #else
-            __pyx_t_8 = PySequence_ITEM(__pyx_t_4, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 240, __pyx_L1_error)
+            __pyx_t_8 = PySequence_ITEM(__pyx_t_4, __pyx_t_9); __pyx_t_9++; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 253, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_8);
             #endif
           }
@@ -6015,7 +6407,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 240, __pyx_L1_error)
+              else __PYX_ERR(0, 253, __pyx_L1_error)
             }
             break;
           }
@@ -6024,45 +6416,45 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         __Pyx_XDECREF_SET(__pyx_v_act, __pyx_t_8);
         __pyx_t_8 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":242
+        /* "MB_Calendar/c_utils.pyx":255
  *             for act in planner[week][day]:
  *                 activity = {
  *                     "day": str(day),             # <<<<<<<<<<<<<<
  *                     "text": act["text"],
  *                     "duration":  round(float(act["duration"]), 2),
  */
-        __pyx_t_8 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 242, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_11 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_v_day); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 242, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyString_Type)), __pyx_v_day); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_day, __pyx_t_11) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_day, __pyx_t_11) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":243
+        /* "MB_Calendar/c_utils.pyx":256
  *                 activity = {
  *                     "day": str(day),
  *                     "text": act["text"],             # <<<<<<<<<<<<<<
  *                     "duration":  round(float(act["duration"]), 2),
  *                     "rowspan": len(planner[week][day]),
  */
-        __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 243, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 256, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_text, __pyx_t_11) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_text, __pyx_t_11) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":244
+        /* "MB_Calendar/c_utils.pyx":257
  *                     "day": str(day),
  *                     "text": act["text"],
  *                     "duration":  round(float(act["duration"]), 2),             # <<<<<<<<<<<<<<
  *                     "rowspan": len(planner[week][day]),
  *                     "start_time": round(hour_now, 2)
  */
-        __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
-        __pyx_t_12 = __Pyx_PyNumber_Float(__pyx_t_11); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyNumber_Float(__pyx_t_11); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        __pyx_t_11 = PyTuple_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_11 = PyTuple_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_GIVEREF(__pyx_t_12);
         PyTuple_SET_ITEM(__pyx_t_11, 0, __pyx_t_12);
@@ -6070,39 +6462,39 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         __Pyx_GIVEREF(__pyx_int_2);
         PyTuple_SET_ITEM(__pyx_t_11, 1, __pyx_int_2);
         __pyx_t_12 = 0;
-        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_11, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 244, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_11, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 257, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_duration, __pyx_t_12) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_duration, __pyx_t_12) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":245
+        /* "MB_Calendar/c_utils.pyx":258
  *                     "text": act["text"],
  *                     "duration":  round(float(act["duration"]), 2),
  *                     "rowspan": len(planner[week][day]),             # <<<<<<<<<<<<<<
  *                     "start_time": round(hour_now, 2)
  *                 }
  */
-        __pyx_t_12 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 245, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyObject_GetItem(__pyx_v_planner, __pyx_v_week); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
-        __pyx_t_11 = __Pyx_PyObject_GetItem(__pyx_t_12, __pyx_v_day); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 245, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyObject_GetItem(__pyx_t_12, __pyx_v_day); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-        __pyx_t_13 = PyObject_Length(__pyx_t_11); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 245, __pyx_L1_error)
+        __pyx_t_13 = PyObject_Length(__pyx_t_11); if (unlikely(__pyx_t_13 == ((Py_ssize_t)-1))) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        __pyx_t_11 = PyInt_FromSsize_t(__pyx_t_13); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 245, __pyx_L1_error)
+        __pyx_t_11 = PyInt_FromSsize_t(__pyx_t_13); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 258, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_rowspan, __pyx_t_11) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_rowspan, __pyx_t_11) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":246
+        /* "MB_Calendar/c_utils.pyx":259
  *                     "duration":  round(float(act["duration"]), 2),
  *                     "rowspan": len(planner[week][day]),
  *                     "start_time": round(hour_now, 2)             # <<<<<<<<<<<<<<
  *                 }
  *                 hour_now += round(float(act["duration"]), 2)
  */
-        __pyx_t_11 = PyTuple_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 246, __pyx_L1_error)
+        __pyx_t_11 = PyTuple_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 259, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_INCREF(__pyx_v_hour_now);
         __Pyx_GIVEREF(__pyx_v_hour_now);
@@ -6110,27 +6502,27 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         __Pyx_INCREF(__pyx_int_2);
         __Pyx_GIVEREF(__pyx_int_2);
         PyTuple_SET_ITEM(__pyx_t_11, 1, __pyx_int_2);
-        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_11, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 246, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_11, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 259, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_start_time, __pyx_t_12) < 0) __PYX_ERR(0, 242, __pyx_L1_error)
+        if (PyDict_SetItem(__pyx_t_8, __pyx_n_s_start_time, __pyx_t_12) < 0) __PYX_ERR(0, 255, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_XDECREF_SET(__pyx_v_activity, ((PyObject*)__pyx_t_8));
         __pyx_t_8 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":248
+        /* "MB_Calendar/c_utils.pyx":261
  *                     "start_time": round(hour_now, 2)
  *                 }
  *                 hour_now += round(float(act["duration"]), 2)             # <<<<<<<<<<<<<<
  *                 activity["end_time"] = round(hour_now, 2)
  *                 if act["text"].startswith("->"):
  */
-        __pyx_t_8 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 261, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_12 = __Pyx_PyNumber_Float(__pyx_t_8); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyNumber_Float(__pyx_t_8); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 261, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 261, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_GIVEREF(__pyx_t_12);
         PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_12);
@@ -6138,23 +6530,23 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         __Pyx_GIVEREF(__pyx_int_2);
         PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_int_2);
         __pyx_t_12 = 0;
-        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_8, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_8, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 261, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        __pyx_t_8 = PyNumber_InPlaceAdd(__pyx_v_hour_now, __pyx_t_12); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 248, __pyx_L1_error)
+        __pyx_t_8 = PyNumber_InPlaceAdd(__pyx_v_hour_now, __pyx_t_12); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 261, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_8);
         __pyx_t_8 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":249
+        /* "MB_Calendar/c_utils.pyx":262
  *                 }
  *                 hour_now += round(float(act["duration"]), 2)
  *                 activity["end_time"] = round(hour_now, 2)             # <<<<<<<<<<<<<<
  *                 if act["text"].startswith("->"):
  *                     activity["type"] = "trip"
  */
-        __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 249, __pyx_L1_error)
+        __pyx_t_8 = PyTuple_New(2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 262, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_INCREF(__pyx_v_hour_now);
         __Pyx_GIVEREF(__pyx_v_hour_now);
@@ -6162,22 +6554,22 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         __Pyx_INCREF(__pyx_int_2);
         __Pyx_GIVEREF(__pyx_int_2);
         PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_int_2);
-        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_8, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 249, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_builtin_round, __pyx_t_8, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 262, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_end_time, __pyx_t_12) < 0)) __PYX_ERR(0, 249, __pyx_L1_error)
+        if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_end_time, __pyx_t_12) < 0)) __PYX_ERR(0, 262, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":250
+        /* "MB_Calendar/c_utils.pyx":263
  *                 hour_now += round(float(act["duration"]), 2)
  *                 activity["end_time"] = round(hour_now, 2)
  *                 if act["text"].startswith("->"):             # <<<<<<<<<<<<<<
  *                     activity["type"] = "trip"
  *                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
  */
-        __pyx_t_8 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 250, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 263, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
-        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_startswith); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 250, __pyx_L1_error)
+        __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_startswith); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 263, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_11);
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __pyx_t_8 = NULL;
@@ -6192,59 +6584,59 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         }
         __pyx_t_12 = (__pyx_t_8) ? __Pyx_PyObject_Call2Args(__pyx_t_11, __pyx_t_8, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_kp_s_);
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 250, __pyx_L1_error)
+        if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 263, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-        __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_12); if (unlikely(__pyx_t_14 < 0)) __PYX_ERR(0, 250, __pyx_L1_error)
+        __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_12); if (unlikely(__pyx_t_14 < 0)) __PYX_ERR(0, 263, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
         if (__pyx_t_14) {
 
-          /* "MB_Calendar/c_utils.pyx":251
+          /* "MB_Calendar/c_utils.pyx":264
  *                 activity["end_time"] = round(hour_now, 2)
  *                 if act["text"].startswith("->"):
  *                     activity["type"] = "trip"             # <<<<<<<<<<<<<<
  *                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
  *                     if act["from"] != from_loc:
  */
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_type, __pyx_n_s_trip) < 0)) __PYX_ERR(0, 251, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_type, __pyx_n_s_trip) < 0)) __PYX_ERR(0, 264, __pyx_L1_error)
 
-          /* "MB_Calendar/c_utils.pyx":253
+          /* "MB_Calendar/c_utils.pyx":266
  *                     activity["type"] = "trip"
  *                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
  *                     if act["from"] != from_loc:             # <<<<<<<<<<<<<<
  *                         activity["from"] = from_loc
  *                         activity["to"] = act["from"]
  */
-          __pyx_t_12 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 253, __pyx_L1_error)
+          __pyx_t_12 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 266, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_12);
-          __pyx_t_11 = PyObject_RichCompare(__pyx_t_12, __pyx_v_from_loc, Py_NE); __Pyx_XGOTREF(__pyx_t_11); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 253, __pyx_L1_error)
+          __pyx_t_11 = PyObject_RichCompare(__pyx_t_12, __pyx_v_from_loc, Py_NE); __Pyx_XGOTREF(__pyx_t_11); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 266, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-          __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_14 < 0)) __PYX_ERR(0, 253, __pyx_L1_error)
+          __pyx_t_14 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_14 < 0)) __PYX_ERR(0, 266, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
           if (__pyx_t_14) {
 
-            /* "MB_Calendar/c_utils.pyx":254
+            /* "MB_Calendar/c_utils.pyx":267
  *                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
  *                     if act["from"] != from_loc:
  *                         activity["from"] = from_loc             # <<<<<<<<<<<<<<
  *                         activity["to"] = act["from"]
  *                     else:
  */
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_v_from_loc) < 0)) __PYX_ERR(0, 254, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_v_from_loc) < 0)) __PYX_ERR(0, 267, __pyx_L1_error)
 
-            /* "MB_Calendar/c_utils.pyx":255
+            /* "MB_Calendar/c_utils.pyx":268
  *                     if act["from"] != from_loc:
  *                         activity["from"] = from_loc
  *                         activity["to"] = act["from"]             # <<<<<<<<<<<<<<
  *                     else:
  *                         activity["from"] = act["from"]
  */
-            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 255, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 268, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 255, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 268, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":253
+            /* "MB_Calendar/c_utils.pyx":266
  *                     activity["type"] = "trip"
  *                     # activity["geometry"] = act["geometry"] GEOMETRY NON SERVE
  *                     if act["from"] != from_loc:             # <<<<<<<<<<<<<<
@@ -6254,7 +6646,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
             goto __pyx_L10;
           }
 
-          /* "MB_Calendar/c_utils.pyx":257
+          /* "MB_Calendar/c_utils.pyx":270
  *                         activity["to"] = act["from"]
  *                     else:
  *                         activity["from"] = act["from"]             # <<<<<<<<<<<<<<
@@ -6262,26 +6654,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
  *                     if trip_splitted:
  */
           /*else*/ {
-            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 257, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 270, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_t_11) < 0)) __PYX_ERR(0, 257, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_t_11) < 0)) __PYX_ERR(0, 270, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":258
+            /* "MB_Calendar/c_utils.pyx":271
  *                     else:
  *                         activity["from"] = act["from"]
  *                         activity["to"] = act["to"]             # <<<<<<<<<<<<<<
  *                     if trip_splitted:
  *                         activity["from"] =  final_planner[week][-1]["from"]
  */
-            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 258, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 271, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 258, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 271, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
           }
           __pyx_L10:;
 
-          /* "MB_Calendar/c_utils.pyx":259
+          /* "MB_Calendar/c_utils.pyx":272
  *                         activity["from"] = act["from"]
  *                         activity["to"] = act["to"]
  *                     if trip_splitted:             # <<<<<<<<<<<<<<
@@ -6291,43 +6683,43 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           __pyx_t_14 = (__pyx_v_trip_splitted != 0);
           if (__pyx_t_14) {
 
-            /* "MB_Calendar/c_utils.pyx":260
+            /* "MB_Calendar/c_utils.pyx":273
  *                         activity["to"] = act["to"]
  *                     if trip_splitted:
  *                         activity["from"] =  final_planner[week][-1]["from"]             # <<<<<<<<<<<<<<
  *                         activity["to"] = final_planner[week][-1]["to"]
  *                     from_loc = activity["to"]
  */
-            __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 260, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 273, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
-            __pyx_t_12 = __Pyx_GetItemInt(__pyx_t_11, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 260, __pyx_L1_error)
+            __pyx_t_12 = __Pyx_GetItemInt(__pyx_t_11, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 273, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_12);
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_t_12, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 260, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_t_12, __pyx_n_s_from); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 273, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_t_11) < 0)) __PYX_ERR(0, 260, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_from, __pyx_t_11) < 0)) __PYX_ERR(0, 273, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":261
+            /* "MB_Calendar/c_utils.pyx":274
  *                     if trip_splitted:
  *                         activity["from"] =  final_planner[week][-1]["from"]
  *                         activity["to"] = final_planner[week][-1]["to"]             # <<<<<<<<<<<<<<
  *                     from_loc = activity["to"]
  *                     activity["description"] = "{0}  {1}".format(activity["from"], activity["to"])
  */
-            __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 261, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 274, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
-            __pyx_t_12 = __Pyx_GetItemInt(__pyx_t_11, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 261, __pyx_L1_error)
+            __pyx_t_12 = __Pyx_GetItemInt(__pyx_t_11, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 274, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_12);
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_t_12, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 261, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_t_12, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 274, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
             __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 261, __pyx_L1_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_to, __pyx_t_11) < 0)) __PYX_ERR(0, 274, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":259
+            /* "MB_Calendar/c_utils.pyx":272
  *                         activity["from"] = act["from"]
  *                         activity["to"] = act["to"]
  *                     if trip_splitted:             # <<<<<<<<<<<<<<
@@ -6336,30 +6728,30 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
  */
           }
 
-          /* "MB_Calendar/c_utils.pyx":262
+          /* "MB_Calendar/c_utils.pyx":275
  *                         activity["from"] =  final_planner[week][-1]["from"]
  *                         activity["to"] = final_planner[week][-1]["to"]
  *                     from_loc = activity["to"]             # <<<<<<<<<<<<<<
  *                     activity["description"] = "{0}  {1}".format(activity["from"], activity["to"])
  *                     trip_splitted = True
  */
-          __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 262, __pyx_L1_error)
+          __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_to); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 275, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_11);
           __Pyx_DECREF_SET(__pyx_v_from_loc, __pyx_t_11);
           __pyx_t_11 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":263
+          /* "MB_Calendar/c_utils.pyx":276
  *                         activity["to"] = final_planner[week][-1]["to"]
  *                     from_loc = activity["to"]
  *                     activity["description"] = "{0}  {1}".format(activity["from"], activity["to"])             # <<<<<<<<<<<<<<
  *                     trip_splitted = True
  *                 else:
  */
-          __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_1, __pyx_n_s_format); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 263, __pyx_L1_error)
+          __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_1, __pyx_n_s_format); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 276, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_12);
-          __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_from); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 263, __pyx_L1_error)
+          __pyx_t_8 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_from); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 276, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_8);
-          __pyx_t_15 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_to); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 263, __pyx_L1_error)
+          __pyx_t_15 = __Pyx_PyDict_GetItem(__pyx_v_activity, __pyx_n_s_to); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 276, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_15);
           __pyx_t_16 = NULL;
           __pyx_t_17 = 0;
@@ -6376,7 +6768,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           #if CYTHON_FAST_PYCALL
           if (PyFunction_Check(__pyx_t_12)) {
             PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_t_8, __pyx_t_15};
-            __pyx_t_11 = __Pyx_PyFunction_FastCall(__pyx_t_12, __pyx_temp+1-__pyx_t_17, 2+__pyx_t_17); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 263, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyFunction_FastCall(__pyx_t_12, __pyx_temp+1-__pyx_t_17, 2+__pyx_t_17); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 276, __pyx_L1_error)
             __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
             __Pyx_GOTREF(__pyx_t_11);
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -6386,7 +6778,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           #if CYTHON_FAST_PYCCALL
           if (__Pyx_PyFastCFunction_Check(__pyx_t_12)) {
             PyObject *__pyx_temp[3] = {__pyx_t_16, __pyx_t_8, __pyx_t_15};
-            __pyx_t_11 = __Pyx_PyCFunction_FastCall(__pyx_t_12, __pyx_temp+1-__pyx_t_17, 2+__pyx_t_17); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 263, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyCFunction_FastCall(__pyx_t_12, __pyx_temp+1-__pyx_t_17, 2+__pyx_t_17); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 276, __pyx_L1_error)
             __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
             __Pyx_GOTREF(__pyx_t_11);
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
@@ -6394,7 +6786,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           } else
           #endif
           {
-            __pyx_t_18 = PyTuple_New(2+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 263, __pyx_L1_error)
+            __pyx_t_18 = PyTuple_New(2+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 276, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_18);
             if (__pyx_t_16) {
               __Pyx_GIVEREF(__pyx_t_16); PyTuple_SET_ITEM(__pyx_t_18, 0, __pyx_t_16); __pyx_t_16 = NULL;
@@ -6405,15 +6797,15 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
             PyTuple_SET_ITEM(__pyx_t_18, 1+__pyx_t_17, __pyx_t_15);
             __pyx_t_8 = 0;
             __pyx_t_15 = 0;
-            __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_t_18, NULL); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 263, __pyx_L1_error)
+            __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_t_18, NULL); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 276, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_11);
             __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
           }
           __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_description, __pyx_t_11) < 0)) __PYX_ERR(0, 263, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_description, __pyx_t_11) < 0)) __PYX_ERR(0, 276, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":264
+          /* "MB_Calendar/c_utils.pyx":277
  *                     from_loc = activity["to"]
  *                     activity["description"] = "{0}  {1}".format(activity["from"], activity["to"])
  *                     trip_splitted = True             # <<<<<<<<<<<<<<
@@ -6422,7 +6814,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
  */
           __pyx_v_trip_splitted = 1;
 
-          /* "MB_Calendar/c_utils.pyx":250
+          /* "MB_Calendar/c_utils.pyx":263
  *                 hour_now += round(float(act["duration"]), 2)
  *                 activity["end_time"] = round(hour_now, 2)
  *                 if act["text"].startswith("->"):             # <<<<<<<<<<<<<<
@@ -6432,7 +6824,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
           goto __pyx_L9;
         }
 
-        /* "MB_Calendar/c_utils.pyx":266
+        /* "MB_Calendar/c_utils.pyx":279
  *                     trip_splitted = True
  *                 else:
  *                     activity["type"] = "event"             # <<<<<<<<<<<<<<
@@ -6440,48 +6832,48 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
  *                     activity["location"] =  act["location"]
  */
         /*else*/ {
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_type, __pyx_n_s_event) < 0)) __PYX_ERR(0, 266, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_type, __pyx_n_s_event) < 0)) __PYX_ERR(0, 279, __pyx_L1_error)
 
-          /* "MB_Calendar/c_utils.pyx":267
+          /* "MB_Calendar/c_utils.pyx":280
  *                 else:
  *                     activity["type"] = "event"
  *                     activity["description"] = act["subject"]             # <<<<<<<<<<<<<<
  *                     activity["location"] =  act["location"]
  *                     activity["info"] =  act.get("info", "")
  */
-          __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_subject); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 267, __pyx_L1_error)
+          __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_subject); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 280, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_11);
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_description, __pyx_t_11) < 0)) __PYX_ERR(0, 267, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_description, __pyx_t_11) < 0)) __PYX_ERR(0, 280, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":268
+          /* "MB_Calendar/c_utils.pyx":281
  *                     activity["type"] = "event"
  *                     activity["description"] = act["subject"]
  *                     activity["location"] =  act["location"]             # <<<<<<<<<<<<<<
  *                     activity["info"] =  act.get("info", "")
  *                     trip_splitted = False
  */
-          __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_location); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 268, __pyx_L1_error)
+          __pyx_t_11 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_location); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 281, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_11);
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_location, __pyx_t_11) < 0)) __PYX_ERR(0, 268, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_location, __pyx_t_11) < 0)) __PYX_ERR(0, 281, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":269
+          /* "MB_Calendar/c_utils.pyx":282
  *                     activity["description"] = act["subject"]
  *                     activity["location"] =  act["location"]
  *                     activity["info"] =  act.get("info", "")             # <<<<<<<<<<<<<<
  *                     trip_splitted = False
  *                 final_planner[week].append(activity)
  */
-          __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_get); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 269, __pyx_L1_error)
+          __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_get); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 282, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_11);
-          __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 269, __pyx_L1_error)
+          __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 282, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_12);
           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_info, __pyx_t_12) < 0)) __PYX_ERR(0, 269, __pyx_L1_error)
+          if (unlikely(PyDict_SetItem(__pyx_v_activity, __pyx_n_s_info, __pyx_t_12) < 0)) __PYX_ERR(0, 282, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":270
+          /* "MB_Calendar/c_utils.pyx":283
  *                     activity["location"] =  act["location"]
  *                     activity["info"] =  act.get("info", "")
  *                     trip_splitted = False             # <<<<<<<<<<<<<<
@@ -6492,19 +6884,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
         }
         __pyx_L9:;
 
-        /* "MB_Calendar/c_utils.pyx":271
+        /* "MB_Calendar/c_utils.pyx":284
  *                     activity["info"] =  act.get("info", "")
  *                     trip_splitted = False
  *                 final_planner[week].append(activity)             # <<<<<<<<<<<<<<
  *     return final_planner
  * 
  */
-        __pyx_t_12 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 271, __pyx_L1_error)
+        __pyx_t_12 = __Pyx_PyDict_GetItem(__pyx_v_final_planner, __pyx_v_week); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 284, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_12);
-        __pyx_t_19 = __Pyx_PyObject_Append(__pyx_t_12, __pyx_v_activity); if (unlikely(__pyx_t_19 == ((int)-1))) __PYX_ERR(0, 271, __pyx_L1_error)
+        __pyx_t_19 = __Pyx_PyObject_Append(__pyx_t_12, __pyx_v_activity); if (unlikely(__pyx_t_19 == ((int)-1))) __PYX_ERR(0, 284, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":240
+        /* "MB_Calendar/c_utils.pyx":253
  *         for day in planner[week]:
  *             hour_now = START_HOUR_WORKING
  *             for act in planner[week][day]:             # <<<<<<<<<<<<<<
@@ -6514,7 +6906,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":238
+      /* "MB_Calendar/c_utils.pyx":251
  *         final_planner[week] = []
  *         trip_splitted = False
  *         for day in planner[week]:             # <<<<<<<<<<<<<<
@@ -6524,7 +6916,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":235
+    /* "MB_Calendar/c_utils.pyx":248
  *     from_loc = base
  * 
  *     for week in planner:             # <<<<<<<<<<<<<<
@@ -6534,7 +6926,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":272
+  /* "MB_Calendar/c_utils.pyx":285
  *                     trip_splitted = False
  *                 final_planner[week].append(activity)
  *     return final_planner             # <<<<<<<<<<<<<<
@@ -6546,7 +6938,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
   __pyx_r = __pyx_v_final_planner;
   goto __pyx_L0;
 
-  /* "MB_Calendar/c_utils.pyx":231
+  /* "MB_Calendar/c_utils.pyx":244
  * 
  * 
  * def format_order_monthly_planner(planner, base):             # <<<<<<<<<<<<<<
@@ -6580,7 +6972,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_4format_order_monthly_planner(C
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":274
+/* "MB_Calendar/c_utils.pyx":287
  *     return final_planner
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):             # <<<<<<<<<<<<<<
@@ -6629,23 +7021,23 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_7reorganize_week(PyObject *__py
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_max_days_in_week)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 1); __PYX_ERR(0, 274, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 1); __PYX_ERR(0, 287, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_base)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 2); __PYX_ERR(0, 274, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 2); __PYX_ERR(0, 287, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_routes)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 3); __PYX_ERR(0, 274, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, 3); __PYX_ERR(0, 287, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "reorganize_week") < 0)) __PYX_ERR(0, 274, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "reorganize_week") < 0)) __PYX_ERR(0, 287, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
@@ -6662,7 +7054,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_7reorganize_week(PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 274, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("reorganize_week", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 287, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.reorganize_week", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -6730,16 +7122,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   __Pyx_RefNannySetupContext("reorganize_week", 0);
   __Pyx_INCREF(__pyx_v_old_week);
 
-  /* "MB_Calendar/c_utils.pyx":275
+  /* "MB_Calendar/c_utils.pyx":288
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):
  *     if len(old_week.get(max(old_week.keys()))) == 0:             # <<<<<<<<<<<<<<
  *         last_trip = old_week.get(max(old_week.keys())-1)[-1]
  *     else:
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -6753,10 +7145,10 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   }
   __pyx_t_3 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 275, __pyx_L1_error)
+  if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -6772,24 +7164,24 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 275, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_t_6 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 288, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_7 = ((__pyx_t_6 == 0) != 0);
   if (__pyx_t_7) {
 
-    /* "MB_Calendar/c_utils.pyx":276
+    /* "MB_Calendar/c_utils.pyx":289
  * def reorganize_week(old_week, max_days_in_week, base, routes):
  *     if len(old_week.get(max(old_week.keys()))) == 0:
  *         last_trip = old_week.get(max(old_week.keys())-1)[-1]             # <<<<<<<<<<<<<<
  *     else:
  *         last_trip = old_week.get(max(old_week.keys()))[-1]
  */
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_5 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -6803,13 +7195,13 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __pyx_t_4 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 276, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyInt_SubtractObjC(__pyx_t_3, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_SubtractObjC(__pyx_t_3, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_3 = NULL;
@@ -6825,16 +7217,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 276, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_last_trip = __pyx_t_2;
     __pyx_t_2 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":275
+    /* "MB_Calendar/c_utils.pyx":288
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):
  *     if len(old_week.get(max(old_week.keys()))) == 0:             # <<<<<<<<<<<<<<
@@ -6844,7 +7236,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     goto __pyx_L3;
   }
 
-  /* "MB_Calendar/c_utils.pyx":278
+  /* "MB_Calendar/c_utils.pyx":291
  *         last_trip = old_week.get(max(old_week.keys())-1)[-1]
  *     else:
  *         last_trip = old_week.get(max(old_week.keys()))[-1]             # <<<<<<<<<<<<<<
@@ -6852,9 +7244,9 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  *     days_out = len(old_week)
  */
   /*else*/ {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 278, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_keys); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_5 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -6868,10 +7260,10 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __pyx_t_4 = (__pyx_t_5) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_5) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 278, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 278, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_max, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = NULL;
@@ -6887,10 +7279,10 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     __pyx_t_2 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_4, __pyx_t_3) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_3);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 278, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_2, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_2, -1L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 291, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_v_last_trip = __pyx_t_1;
@@ -6898,24 +7290,24 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   }
   __pyx_L3:;
 
-  /* "MB_Calendar/c_utils.pyx":280
+  /* "MB_Calendar/c_utils.pyx":293
  *         last_trip = old_week.get(max(old_week.keys()))[-1]
  * 
  *     days_out = len(old_week)             # <<<<<<<<<<<<<<
  *     # print("first trip: "+old_week.get(1)[0]["text"])
  *     # print("last trip: "+last_trip["text"])
  */
-  __pyx_t_6 = PyObject_Length(__pyx_v_old_week); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 280, __pyx_L1_error)
+  __pyx_t_6 = PyObject_Length(__pyx_v_old_week); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 293, __pyx_L1_error)
   __pyx_v_days_out = __pyx_t_6;
 
-  /* "MB_Calendar/c_utils.pyx":283
+  /* "MB_Calendar/c_utils.pyx":296
  *     # print("first trip: "+old_week.get(1)[0]["text"])
  *     # print("last trip: "+last_trip["text"])
  *     distance_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50             # <<<<<<<<<<<<<<
  *     # print("distance_remaining: "+str(distance_remaining))
  *     if days_out>max_days_in_week:
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -6929,51 +7321,51 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   }
   __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_int_1) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_int_1);
   __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 283, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_t_2, __pyx_n_s_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_t_2, __pyx_n_s_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_8 = __Pyx_PyObject_AsDouble(__pyx_t_1); if (unlikely(__pyx_t_8 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_AsDouble(__pyx_t_1); if (unlikely(__pyx_t_8 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_last_trip, __pyx_n_s_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_last_trip, __pyx_n_s_distance); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_1); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 283, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_1); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 296, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_distance_remaining = ((__pyx_t_8 - __pyx_t_9) + 50.0);
 
-  /* "MB_Calendar/c_utils.pyx":285
+  /* "MB_Calendar/c_utils.pyx":298
  *     distance_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50
  *     # print("distance_remaining: "+str(distance_remaining))
  *     if days_out>max_days_in_week:             # <<<<<<<<<<<<<<
  *       reordered_list = []
  *       old_text = ""
  */
-  __pyx_t_1 = PyInt_FromSsize_t(__pyx_v_days_out); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_1 = PyInt_FromSsize_t(__pyx_v_days_out); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 298, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, __pyx_v_max_days_in_week, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, __pyx_v_max_days_in_week, Py_GT); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 298, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 285, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 298, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_7) {
 
-    /* "MB_Calendar/c_utils.pyx":286
+    /* "MB_Calendar/c_utils.pyx":299
  *     # print("distance_remaining: "+str(distance_remaining))
  *     if days_out>max_days_in_week:
  *       reordered_list = []             # <<<<<<<<<<<<<<
  *       old_text = ""
  *       for key, value in old_week.items():
  */
-    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 299, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __pyx_v_reordered_list = ((PyObject*)__pyx_t_2);
     __pyx_t_2 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":287
+    /* "MB_Calendar/c_utils.pyx":300
  *     if days_out>max_days_in_week:
  *       reordered_list = []
  *       old_text = ""             # <<<<<<<<<<<<<<
@@ -6983,14 +7375,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     __Pyx_INCREF(__pyx_kp_s__2);
     __pyx_v_old_text = __pyx_kp_s__2;
 
-    /* "MB_Calendar/c_utils.pyx":288
+    /* "MB_Calendar/c_utils.pyx":301
  *       reordered_list = []
  *       old_text = ""
  *       for key, value in old_week.items():             # <<<<<<<<<<<<<<
  *           for act in value:
  *               if act["text"].startswith("->")==False:
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_items); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 288, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_items); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_3 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -7004,16 +7396,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __pyx_t_2 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_1);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
       __pyx_t_1 = __pyx_t_2; __Pyx_INCREF(__pyx_t_1); __pyx_t_6 = 0;
       __pyx_t_10 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 288, __pyx_L1_error)
+      __pyx_t_6 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 301, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_10 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 288, __pyx_L1_error)
+      __pyx_t_10 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 301, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     for (;;) {
@@ -7021,17 +7413,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (likely(PyList_CheckExact(__pyx_t_1))) {
           if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 288, __pyx_L1_error)
+          __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 301, __pyx_L1_error)
           #else
-          __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
+          __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 301, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           #endif
         } else {
           if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 288, __pyx_L1_error)
+          __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 301, __pyx_L1_error)
           #else
-          __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 288, __pyx_L1_error)
+          __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 301, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           #endif
         }
@@ -7041,7 +7433,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 288, __pyx_L1_error)
+            else __PYX_ERR(0, 301, __pyx_L1_error)
           }
           break;
         }
@@ -7053,7 +7445,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (unlikely(size != 2)) {
           if (size > 2) __Pyx_RaiseTooManyValuesError(2);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 288, __pyx_L1_error)
+          __PYX_ERR(0, 301, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -7066,15 +7458,15 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_INCREF(__pyx_t_3);
         __Pyx_INCREF(__pyx_t_4);
         #else
-        __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
+        __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 301, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 301, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 288, __pyx_L1_error)
+        __pyx_t_5 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 301, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_11 = Py_TYPE(__pyx_t_5)->tp_iternext;
@@ -7082,7 +7474,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GOTREF(__pyx_t_3);
         index = 1; __pyx_t_4 = __pyx_t_11(__pyx_t_5); if (unlikely(!__pyx_t_4)) goto __pyx_L7_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_4);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 2) < 0) __PYX_ERR(0, 288, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 2) < 0) __PYX_ERR(0, 301, __pyx_L1_error)
         __pyx_t_11 = NULL;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         goto __pyx_L8_unpacking_done;
@@ -7090,7 +7482,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __pyx_t_11 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 288, __pyx_L1_error)
+        __PYX_ERR(0, 301, __pyx_L1_error)
         __pyx_L8_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_3);
@@ -7098,7 +7490,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_XDECREF_SET(__pyx_v_value, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":289
+      /* "MB_Calendar/c_utils.pyx":302
  *       old_text = ""
  *       for key, value in old_week.items():
  *           for act in value:             # <<<<<<<<<<<<<<
@@ -7109,26 +7501,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __pyx_t_2 = __pyx_v_value; __Pyx_INCREF(__pyx_t_2); __pyx_t_12 = 0;
         __pyx_t_13 = NULL;
       } else {
-        __pyx_t_12 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_12 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 302, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_13 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 289, __pyx_L1_error)
+        __pyx_t_13 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 302, __pyx_L1_error)
       }
       for (;;) {
         if (likely(!__pyx_t_13)) {
           if (likely(PyList_CheckExact(__pyx_t_2))) {
             if (__pyx_t_12 >= PyList_GET_SIZE(__pyx_t_2)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_4 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_4); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 289, __pyx_L1_error)
+            __pyx_t_4 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_4); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 302, __pyx_L1_error)
             #else
-            __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+            __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_4);
             #endif
           } else {
             if (__pyx_t_12 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_4); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 289, __pyx_L1_error)
+            __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_12); __Pyx_INCREF(__pyx_t_4); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 302, __pyx_L1_error)
             #else
-            __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+            __pyx_t_4 = PySequence_ITEM(__pyx_t_2, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_4);
             #endif
           }
@@ -7138,7 +7530,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 289, __pyx_L1_error)
+              else __PYX_ERR(0, 302, __pyx_L1_error)
             }
             break;
           }
@@ -7147,16 +7539,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_act, __pyx_t_4);
         __pyx_t_4 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":290
+        /* "MB_Calendar/c_utils.pyx":303
  *       for key, value in old_week.items():
  *           for act in value:
  *               if act["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
  *                   if act["text"] != old_text:
  *                       reordered_list.insert(0, act.copy())
  */
-        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_startswith); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_startswith); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __pyx_t_3 = NULL;
@@ -7171,38 +7563,38 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         }
         __pyx_t_4 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_3, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_kp_s_);
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 290, __pyx_L1_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 290, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 303, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         if (__pyx_t_7) {
 
-          /* "MB_Calendar/c_utils.pyx":291
+          /* "MB_Calendar/c_utils.pyx":304
  *           for act in value:
  *               if act["text"].startswith("->")==False:
  *                   if act["text"] != old_text:             # <<<<<<<<<<<<<<
  *                       reordered_list.insert(0, act.copy())
  *                       old_text = act["text"]
  */
-          __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 291, __pyx_L1_error)
+          __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 304, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_4 = PyObject_RichCompare(__pyx_t_5, __pyx_v_old_text, Py_NE); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 291, __pyx_L1_error)
+          __pyx_t_4 = PyObject_RichCompare(__pyx_t_5, __pyx_v_old_text, Py_NE); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 304, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-          __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 291, __pyx_L1_error)
+          __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 304, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           if (__pyx_t_7) {
 
-            /* "MB_Calendar/c_utils.pyx":292
+            /* "MB_Calendar/c_utils.pyx":305
  *               if act["text"].startswith("->")==False:
  *                   if act["text"] != old_text:
  *                       reordered_list.insert(0, act.copy())             # <<<<<<<<<<<<<<
  *                       old_text = act["text"]
  *                   else:
  */
-            __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_copy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 292, __pyx_L1_error)
+            __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_copy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 305, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_5);
             __pyx_t_3 = NULL;
             if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -7216,25 +7608,25 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             }
             __pyx_t_4 = (__pyx_t_3) ? __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_3) : __Pyx_PyObject_CallNoArg(__pyx_t_5);
             __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-            if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 292, __pyx_L1_error)
+            if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 305, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_4);
             __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-            __pyx_t_14 = PyList_Insert(__pyx_v_reordered_list, 0, __pyx_t_4); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 292, __pyx_L1_error)
+            __pyx_t_14 = PyList_Insert(__pyx_v_reordered_list, 0, __pyx_t_4); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 305, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":293
+            /* "MB_Calendar/c_utils.pyx":306
  *                   if act["text"] != old_text:
  *                       reordered_list.insert(0, act.copy())
  *                       old_text = act["text"]             # <<<<<<<<<<<<<<
  *                   else:
  *                       reordered_list[0]["duration"] += act["duration"]
  */
-            __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 293, __pyx_L1_error)
+            __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 306, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_4);
             __Pyx_DECREF_SET(__pyx_v_old_text, __pyx_t_4);
             __pyx_t_4 = 0;
 
-            /* "MB_Calendar/c_utils.pyx":291
+            /* "MB_Calendar/c_utils.pyx":304
  *           for act in value:
  *               if act["text"].startswith("->")==False:
  *                   if act["text"] != old_text:             # <<<<<<<<<<<<<<
@@ -7244,7 +7636,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             goto __pyx_L12;
           }
 
-          /* "MB_Calendar/c_utils.pyx":295
+          /* "MB_Calendar/c_utils.pyx":308
  *                       old_text = act["text"]
  *                   else:
  *                       reordered_list[0]["duration"] += act["duration"]             # <<<<<<<<<<<<<<
@@ -7252,26 +7644,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  *       permutations = itertools.permutations(reordered_list)
  */
           /*else*/ {
-            __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_reordered_list, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 295, __pyx_L1_error)
+            __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_reordered_list, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 308, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_4);
             __Pyx_INCREF(__pyx_n_s_duration);
             __pyx_t_15 = __pyx_n_s_duration;
-            __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_t_15); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 295, __pyx_L1_error)
+            __pyx_t_5 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_t_15); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 308, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_5);
-            __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 295, __pyx_L1_error)
+            __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 308, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_3);
-            __pyx_t_16 = PyNumber_InPlaceAdd(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 295, __pyx_L1_error)
+            __pyx_t_16 = PyNumber_InPlaceAdd(__pyx_t_5, __pyx_t_3); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 308, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_16);
             __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-            if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_t_15, __pyx_t_16) < 0)) __PYX_ERR(0, 295, __pyx_L1_error)
+            if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_t_15, __pyx_t_16) < 0)) __PYX_ERR(0, 308, __pyx_L1_error)
             __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
             __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
             __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
           }
           __pyx_L12:;
 
-          /* "MB_Calendar/c_utils.pyx":290
+          /* "MB_Calendar/c_utils.pyx":303
  *       for key, value in old_week.items():
  *           for act in value:
  *               if act["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
@@ -7280,7 +7672,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
         }
 
-        /* "MB_Calendar/c_utils.pyx":289
+        /* "MB_Calendar/c_utils.pyx":302
  *       old_text = ""
  *       for key, value in old_week.items():
  *           for act in value:             # <<<<<<<<<<<<<<
@@ -7290,7 +7682,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       }
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":288
+      /* "MB_Calendar/c_utils.pyx":301
  *       reordered_list = []
  *       old_text = ""
  *       for key, value in old_week.items():             # <<<<<<<<<<<<<<
@@ -7300,16 +7692,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":297
+    /* "MB_Calendar/c_utils.pyx":310
  *                       reordered_list[0]["duration"] += act["duration"]
  * 
  *       permutations = itertools.permutations(reordered_list)             # <<<<<<<<<<<<<<
  *       list_permutated = list(permutations)
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_itertools); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 297, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_itertools); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 310, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_permutations); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 297, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_permutations); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 310, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_2 = NULL;
@@ -7324,25 +7716,25 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __pyx_t_1 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_2, __pyx_v_reordered_list) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_v_reordered_list);
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 297, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 310, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_permutations = __pyx_t_1;
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":298
+    /* "MB_Calendar/c_utils.pyx":311
  * 
  *       permutations = itertools.permutations(reordered_list)
  *       list_permutated = list(permutations)             # <<<<<<<<<<<<<<
  * 
  *       for combo in list_permutated:
  */
-    __pyx_t_1 = PySequence_List(__pyx_v_permutations); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 298, __pyx_L1_error)
+    __pyx_t_1 = PySequence_List(__pyx_v_permutations); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 311, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_v_list_permutated = ((PyObject*)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":300
+    /* "MB_Calendar/c_utils.pyx":313
  *       list_permutated = list(permutations)
  * 
  *       for combo in list_permutated:             # <<<<<<<<<<<<<<
@@ -7353,27 +7745,27 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     for (;;) {
       if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_1)) break;
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 300, __pyx_L1_error)
+      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 313, __pyx_L1_error)
       #else
-      __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 300, __pyx_L1_error)
+      __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 313, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       #endif
       __Pyx_XDECREF_SET(__pyx_v_combo, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":301
+      /* "MB_Calendar/c_utils.pyx":314
  * 
  *       for combo in list_permutated:
  *           current_planner = {}             # <<<<<<<<<<<<<<
  *           week = 1
  *           day = 1
  */
-      __pyx_t_4 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 301, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 314, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_XDECREF_SET(__pyx_v_current_planner, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":302
+      /* "MB_Calendar/c_utils.pyx":315
  *       for combo in list_permutated:
  *           current_planner = {}
  *           week = 1             # <<<<<<<<<<<<<<
@@ -7382,7 +7774,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
       __pyx_v_week = 1;
 
-      /* "MB_Calendar/c_utils.pyx":303
+      /* "MB_Calendar/c_utils.pyx":316
  *           current_planner = {}
  *           week = 1
  *           day = 1             # <<<<<<<<<<<<<<
@@ -7392,50 +7784,50 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_INCREF(__pyx_int_1);
       __Pyx_XDECREF_SET(__pyx_v_day, __pyx_int_1);
 
-      /* "MB_Calendar/c_utils.pyx":305
+      /* "MB_Calendar/c_utils.pyx":318
  *           day = 1
  *           current_planner = {
  *               week:{             # <<<<<<<<<<<<<<
  *                   day: []
  *               }
  */
-      __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 305, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 318, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 305, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 318, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
 
-      /* "MB_Calendar/c_utils.pyx":306
+      /* "MB_Calendar/c_utils.pyx":319
  *           current_planner = {
  *               week:{
  *                   day: []             # <<<<<<<<<<<<<<
  *               }
  *           }
  */
-      __pyx_t_16 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 306, __pyx_L1_error)
+      __pyx_t_16 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 319, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_16);
-      __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 306, __pyx_L1_error)
+      __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 319, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (PyDict_SetItem(__pyx_t_16, __pyx_v_day, __pyx_t_3) < 0) __PYX_ERR(0, 306, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_16, __pyx_v_day, __pyx_t_3) < 0) __PYX_ERR(0, 319, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (PyDict_SetItem(__pyx_t_4, __pyx_t_2, __pyx_t_16) < 0) __PYX_ERR(0, 305, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_4, __pyx_t_2, __pyx_t_16) < 0) __PYX_ERR(0, 318, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
       __Pyx_DECREF_SET(__pyx_v_current_planner, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":309
+      /* "MB_Calendar/c_utils.pyx":322
  *               }
  *           }
  *           hour_now = START_HOUR_WORKING        # ora del giorno             # <<<<<<<<<<<<<<
  *           from_loc = base
  *           for event in combo:
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 309, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 322, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_XDECREF_SET(__pyx_v_hour_now, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":310
+      /* "MB_Calendar/c_utils.pyx":323
  *           }
  *           hour_now = START_HOUR_WORKING        # ora del giorno
  *           from_loc = base             # <<<<<<<<<<<<<<
@@ -7445,7 +7837,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_INCREF(__pyx_v_base);
       __Pyx_XDECREF_SET(__pyx_v_from_loc, __pyx_v_base);
 
-      /* "MB_Calendar/c_utils.pyx":311
+      /* "MB_Calendar/c_utils.pyx":324
  *           hour_now = START_HOUR_WORKING        # ora del giorno
  *           from_loc = base
  *           for event in combo:             # <<<<<<<<<<<<<<
@@ -7456,26 +7848,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __pyx_t_4 = __pyx_v_combo; __Pyx_INCREF(__pyx_t_4); __pyx_t_12 = 0;
         __pyx_t_10 = NULL;
       } else {
-        __pyx_t_12 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_combo); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 311, __pyx_L1_error)
+        __pyx_t_12 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_v_combo); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 324, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 311, __pyx_L1_error)
+        __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 324, __pyx_L1_error)
       }
       for (;;) {
         if (likely(!__pyx_t_10)) {
           if (likely(PyList_CheckExact(__pyx_t_4))) {
             if (__pyx_t_12 >= PyList_GET_SIZE(__pyx_t_4)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_16 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_16); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 311, __pyx_L1_error)
+            __pyx_t_16 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_16); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 324, __pyx_L1_error)
             #else
-            __pyx_t_16 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 311, __pyx_L1_error)
+            __pyx_t_16 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 324, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_16);
             #endif
           } else {
             if (__pyx_t_12 >= PyTuple_GET_SIZE(__pyx_t_4)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_16 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_16); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 311, __pyx_L1_error)
+            __pyx_t_16 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_12); __Pyx_INCREF(__pyx_t_16); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 324, __pyx_L1_error)
             #else
-            __pyx_t_16 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 311, __pyx_L1_error)
+            __pyx_t_16 = PySequence_ITEM(__pyx_t_4, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 324, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_16);
             #endif
           }
@@ -7485,7 +7877,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 311, __pyx_L1_error)
+              else __PYX_ERR(0, 324, __pyx_L1_error)
             }
             break;
           }
@@ -7494,16 +7886,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_event, __pyx_t_16);
         __pyx_t_16 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":312
+        /* "MB_Calendar/c_utils.pyx":325
  *           from_loc = base
  *           for event in combo:
  *               r_to_ev = find_right_route(routes, from_loc, event["location"])             # <<<<<<<<<<<<<<
  *               r_to_ev_duration = float(r_to_ev["duration"])
  *               ev_duration = float(event["duration"])
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 312, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 325, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 312, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 325, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __pyx_t_5 = NULL;
         __pyx_t_17 = 0;
@@ -7520,7 +7912,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCALL
         if (PyFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_routes, __pyx_v_from_loc, __pyx_t_3};
-          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 312, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -7529,14 +7921,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCCALL
         if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_routes, __pyx_v_from_loc, __pyx_t_3};
-          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 312, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         } else
         #endif
         {
-          __pyx_t_18 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 312, __pyx_L1_error)
+          __pyx_t_18 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 325, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_18);
           if (__pyx_t_5) {
             __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_18, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -7550,7 +7942,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GIVEREF(__pyx_t_3);
           PyTuple_SET_ITEM(__pyx_t_18, 2+__pyx_t_17, __pyx_t_3);
           __pyx_t_3 = 0;
-          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_18, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 312, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_18, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
         }
@@ -7558,42 +7950,42 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_r_to_ev, __pyx_t_16);
         __pyx_t_16 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":313
+        /* "MB_Calendar/c_utils.pyx":326
  *           for event in combo:
  *               r_to_ev = find_right_route(routes, from_loc, event["location"])
  *               r_to_ev_duration = float(r_to_ev["duration"])             # <<<<<<<<<<<<<<
  *               ev_duration = float(event["duration"])
  *               r_to_base = find_right_route(routes, base, event["location"])
  */
-        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_to_ev, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 313, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_to_ev, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 326, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
-        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 313, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 326, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         __pyx_v_r_to_ev_duration = __pyx_t_9;
 
-        /* "MB_Calendar/c_utils.pyx":314
+        /* "MB_Calendar/c_utils.pyx":327
  *               r_to_ev = find_right_route(routes, from_loc, event["location"])
  *               r_to_ev_duration = float(r_to_ev["duration"])
  *               ev_duration = float(event["duration"])             # <<<<<<<<<<<<<<
  *               r_to_base = find_right_route(routes, base, event["location"])
  *               r_to_base_duration = float(r_to_base["duration"])
  */
-        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 314, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 327, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
-        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 314, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 327, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         __pyx_v_ev_duration = __pyx_t_9;
 
-        /* "MB_Calendar/c_utils.pyx":315
+        /* "MB_Calendar/c_utils.pyx":328
  *               r_to_ev_duration = float(r_to_ev["duration"])
  *               ev_duration = float(event["duration"])
  *               r_to_base = find_right_route(routes, base, event["location"])             # <<<<<<<<<<<<<<
  *               r_to_base_duration = float(r_to_base["duration"])
  *               if base!=from_loc:
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 315, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 328, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 315, __pyx_L1_error)
+        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 328, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
         __pyx_t_3 = NULL;
         __pyx_t_17 = 0;
@@ -7610,7 +8002,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCALL
         if (PyFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_v_routes, __pyx_v_base, __pyx_t_18};
-          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 315, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 328, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -7619,14 +8011,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCCALL
         if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[4] = {__pyx_t_3, __pyx_v_routes, __pyx_v_base, __pyx_t_18};
-          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 315, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 328, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
         } else
         #endif
         {
-          __pyx_t_5 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 315, __pyx_L1_error)
+          __pyx_t_5 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 328, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           if (__pyx_t_3) {
             __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3); __pyx_t_3 = NULL;
@@ -7640,7 +8032,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GIVEREF(__pyx_t_18);
           PyTuple_SET_ITEM(__pyx_t_5, 2+__pyx_t_17, __pyx_t_18);
           __pyx_t_18 = 0;
-          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 315, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 328, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         }
@@ -7648,39 +8040,39 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_r_to_base, __pyx_t_16);
         __pyx_t_16 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":316
+        /* "MB_Calendar/c_utils.pyx":329
  *               ev_duration = float(event["duration"])
  *               r_to_base = find_right_route(routes, base, event["location"])
  *               r_to_base_duration = float(r_to_base["duration"])             # <<<<<<<<<<<<<<
  *               if base!=from_loc:
  *                   r_from_loc_to_base = find_right_route(routes, base, from_loc)
  */
-        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_to_base, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 316, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_to_base, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 329, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
-        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 316, __pyx_L1_error)
+        __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 329, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         __pyx_v_r_to_base_duration = __pyx_t_9;
 
-        /* "MB_Calendar/c_utils.pyx":317
+        /* "MB_Calendar/c_utils.pyx":330
  *               r_to_base = find_right_route(routes, base, event["location"])
  *               r_to_base_duration = float(r_to_base["duration"])
  *               if base!=from_loc:             # <<<<<<<<<<<<<<
  *                   r_from_loc_to_base = find_right_route(routes, base, from_loc)
  *                   r_from_loc_to_base_duration = float(r_from_loc_to_base["duration"])
  */
-        __pyx_t_16 = PyObject_RichCompare(__pyx_v_base, __pyx_v_from_loc, Py_NE); __Pyx_XGOTREF(__pyx_t_16); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 317, __pyx_L1_error)
-        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_16); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 317, __pyx_L1_error)
+        __pyx_t_16 = PyObject_RichCompare(__pyx_v_base, __pyx_v_from_loc, Py_NE); __Pyx_XGOTREF(__pyx_t_16); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 330, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_16); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 330, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         if (__pyx_t_7) {
 
-          /* "MB_Calendar/c_utils.pyx":318
+          /* "MB_Calendar/c_utils.pyx":331
  *               r_to_base_duration = float(r_to_base["duration"])
  *               if base!=from_loc:
  *                   r_from_loc_to_base = find_right_route(routes, base, from_loc)             # <<<<<<<<<<<<<<
  *                   r_from_loc_to_base_duration = float(r_from_loc_to_base["duration"])
  *               else:
  */
-          __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 318, __pyx_L1_error)
+          __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 331, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           __pyx_t_5 = NULL;
           __pyx_t_17 = 0;
@@ -7697,7 +8089,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           #if CYTHON_FAST_PYCALL
           if (PyFunction_Check(__pyx_t_2)) {
             PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_routes, __pyx_v_base, __pyx_v_from_loc};
-            __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 318, __pyx_L1_error)
+            __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 331, __pyx_L1_error)
             __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
             __Pyx_GOTREF(__pyx_t_16);
           } else
@@ -7705,13 +8097,13 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           #if CYTHON_FAST_PYCCALL
           if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
             PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_routes, __pyx_v_base, __pyx_v_from_loc};
-            __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 318, __pyx_L1_error)
+            __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 3+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 331, __pyx_L1_error)
             __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
             __Pyx_GOTREF(__pyx_t_16);
           } else
           #endif
           {
-            __pyx_t_18 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 318, __pyx_L1_error)
+            __pyx_t_18 = PyTuple_New(3+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 331, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_18);
             if (__pyx_t_5) {
               __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_18, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -7725,7 +8117,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             __Pyx_INCREF(__pyx_v_from_loc);
             __Pyx_GIVEREF(__pyx_v_from_loc);
             PyTuple_SET_ITEM(__pyx_t_18, 2+__pyx_t_17, __pyx_v_from_loc);
-            __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_18, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 318, __pyx_L1_error)
+            __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_18, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 331, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_16);
             __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
           }
@@ -7733,20 +8125,20 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_XDECREF_SET(__pyx_v_r_from_loc_to_base, __pyx_t_16);
           __pyx_t_16 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":319
+          /* "MB_Calendar/c_utils.pyx":332
  *               if base!=from_loc:
  *                   r_from_loc_to_base = find_right_route(routes, base, from_loc)
  *                   r_from_loc_to_base_duration = float(r_from_loc_to_base["duration"])             # <<<<<<<<<<<<<<
  *               else:
  *                   r_from_loc_to_base = {}
  */
-          __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_from_loc_to_base, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 319, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_from_loc_to_base, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 332, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
-          __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 319, __pyx_L1_error)
+          __pyx_t_9 = __Pyx_PyObject_AsDouble(__pyx_t_16); if (unlikely(__pyx_t_9 == ((double)((double)-1)) && PyErr_Occurred())) __PYX_ERR(0, 332, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
           __pyx_v_r_from_loc_to_base_duration = __pyx_t_9;
 
-          /* "MB_Calendar/c_utils.pyx":317
+          /* "MB_Calendar/c_utils.pyx":330
  *               r_to_base = find_right_route(routes, base, event["location"])
  *               r_to_base_duration = float(r_to_base["duration"])
  *               if base!=from_loc:             # <<<<<<<<<<<<<<
@@ -7756,7 +8148,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           goto __pyx_L17;
         }
 
-        /* "MB_Calendar/c_utils.pyx":321
+        /* "MB_Calendar/c_utils.pyx":334
  *                   r_from_loc_to_base_duration = float(r_from_loc_to_base["duration"])
  *               else:
  *                   r_from_loc_to_base = {}             # <<<<<<<<<<<<<<
@@ -7764,12 +8156,12 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  * 
  */
         /*else*/ {
-          __pyx_t_16 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 321, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 334, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_XDECREF_SET(__pyx_v_r_from_loc_to_base, __pyx_t_16);
           __pyx_t_16 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":322
+          /* "MB_Calendar/c_utils.pyx":335
  *               else:
  *                   r_from_loc_to_base = {}
  *                   r_from_loc_to_base_duration = 0             # <<<<<<<<<<<<<<
@@ -7780,16 +8172,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         }
         __pyx_L17:;
 
-        /* "MB_Calendar/c_utils.pyx":324
+        /* "MB_Calendar/c_utils.pyx":337
  *                   r_from_loc_to_base_duration = 0
  * 
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_ev)             # <<<<<<<<<<<<<<
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, event)
  *               from_loc = event["location"]
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 324, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 337, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_18 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 324, __pyx_L1_error)
+        __pyx_t_18 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 337, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
         __pyx_t_5 = NULL;
         __pyx_t_17 = 0;
@@ -7806,7 +8198,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCALL
         if (PyFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[6] = {__pyx_t_5, __pyx_v_current_planner, __pyx_v_day, __pyx_t_18, __pyx_v_hour_now, __pyx_v_r_to_ev};
-          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
@@ -7815,14 +8207,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCCALL
         if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
           PyObject *__pyx_temp[6] = {__pyx_t_5, __pyx_v_current_planner, __pyx_v_day, __pyx_t_18, __pyx_v_hour_now, __pyx_v_r_to_ev};
-          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
         } else
         #endif
         {
-          __pyx_t_3 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_3 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           if (__pyx_t_5) {
             __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -7842,7 +8234,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GIVEREF(__pyx_v_r_to_ev);
           PyTuple_SET_ITEM(__pyx_t_3, 4+__pyx_t_17, __pyx_v_r_to_ev);
           __pyx_t_18 = 0;
-          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_3, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_3, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         }
@@ -7853,7 +8245,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           if (unlikely(size != 3)) {
             if (size > 3) __Pyx_RaiseTooManyValuesError(3);
             else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-            __PYX_ERR(0, 324, __pyx_L1_error)
+            __PYX_ERR(0, 337, __pyx_L1_error)
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
           if (likely(PyTuple_CheckExact(sequence))) {
@@ -7869,17 +8261,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_INCREF(__pyx_t_3);
           __Pyx_INCREF(__pyx_t_18);
           #else
-          __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_2 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
-          __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
-          __pyx_t_18 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_18 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_18);
           #endif
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         } else {
           Py_ssize_t index = -1;
-          __pyx_t_5 = PyObject_GetIter(__pyx_t_16); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 324, __pyx_L1_error)
+          __pyx_t_5 = PyObject_GetIter(__pyx_t_16); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 337, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
           __pyx_t_11 = Py_TYPE(__pyx_t_5)->tp_iternext;
@@ -7889,7 +8281,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GOTREF(__pyx_t_3);
           index = 2; __pyx_t_18 = __pyx_t_11(__pyx_t_5); if (unlikely(!__pyx_t_18)) goto __pyx_L18_unpacking_failed;
           __Pyx_GOTREF(__pyx_t_18);
-          if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 3) < 0) __PYX_ERR(0, 324, __pyx_L1_error)
+          if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 3) < 0) __PYX_ERR(0, 337, __pyx_L1_error)
           __pyx_t_11 = NULL;
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
           goto __pyx_L19_unpacking_done;
@@ -7897,7 +8289,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
           __pyx_t_11 = NULL;
           if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-          __PYX_ERR(0, 324, __pyx_L1_error)
+          __PYX_ERR(0, 337, __pyx_L1_error)
           __pyx_L19_unpacking_done:;
         }
         __Pyx_DECREF_SET(__pyx_v_current_planner, __pyx_t_2);
@@ -7907,16 +8299,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_18);
         __pyx_t_18 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":325
+        /* "MB_Calendar/c_utils.pyx":338
  * 
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_ev)
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, event)             # <<<<<<<<<<<<<<
  *               from_loc = event["location"]
  * 
  */
-        __Pyx_GetModuleGlobalName(__pyx_t_18, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 325, __pyx_L1_error)
+        __Pyx_GetModuleGlobalName(__pyx_t_18, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 338, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
-        __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 325, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 338, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __pyx_t_2 = NULL;
         __pyx_t_17 = 0;
@@ -7933,7 +8325,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCALL
         if (PyFunction_Check(__pyx_t_18)) {
           PyObject *__pyx_temp[6] = {__pyx_t_2, __pyx_v_current_planner, __pyx_v_day, __pyx_t_3, __pyx_v_hour_now, __pyx_v_event};
-          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_18, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyFunction_FastCall(__pyx_t_18, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -7942,14 +8334,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         #if CYTHON_FAST_PYCCALL
         if (__Pyx_PyFastCFunction_Check(__pyx_t_18)) {
           PyObject *__pyx_temp[6] = {__pyx_t_2, __pyx_v_current_planner, __pyx_v_day, __pyx_t_3, __pyx_v_hour_now, __pyx_v_event};
-          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_18, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyCFunction_FastCall(__pyx_t_18, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         } else
         #endif
         {
-          __pyx_t_5 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_5 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           if (__pyx_t_2) {
             __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2); __pyx_t_2 = NULL;
@@ -7969,7 +8361,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GIVEREF(__pyx_v_event);
           PyTuple_SET_ITEM(__pyx_t_5, 4+__pyx_t_17, __pyx_v_event);
           __pyx_t_3 = 0;
-          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_18, __pyx_t_5, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_18, __pyx_t_5, NULL); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         }
@@ -7980,7 +8372,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           if (unlikely(size != 3)) {
             if (size > 3) __Pyx_RaiseTooManyValuesError(3);
             else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-            __PYX_ERR(0, 325, __pyx_L1_error)
+            __PYX_ERR(0, 338, __pyx_L1_error)
           }
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
           if (likely(PyTuple_CheckExact(sequence))) {
@@ -7996,17 +8388,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_INCREF(__pyx_t_5);
           __Pyx_INCREF(__pyx_t_3);
           #else
-          __pyx_t_18 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_18 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_18);
-          __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_5 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
-          __pyx_t_3 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         } else {
           Py_ssize_t index = -1;
-          __pyx_t_2 = PyObject_GetIter(__pyx_t_16); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 325, __pyx_L1_error)
+          __pyx_t_2 = PyObject_GetIter(__pyx_t_16); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 338, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_2);
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
           __pyx_t_11 = Py_TYPE(__pyx_t_2)->tp_iternext;
@@ -8016,7 +8408,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_GOTREF(__pyx_t_5);
           index = 2; __pyx_t_3 = __pyx_t_11(__pyx_t_2); if (unlikely(!__pyx_t_3)) goto __pyx_L20_unpacking_failed;
           __Pyx_GOTREF(__pyx_t_3);
-          if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_2), 3) < 0) __PYX_ERR(0, 325, __pyx_L1_error)
+          if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_2), 3) < 0) __PYX_ERR(0, 338, __pyx_L1_error)
           __pyx_t_11 = NULL;
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           goto __pyx_L21_unpacking_done;
@@ -8024,7 +8416,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
           __pyx_t_11 = NULL;
           if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-          __PYX_ERR(0, 325, __pyx_L1_error)
+          __PYX_ERR(0, 338, __pyx_L1_error)
           __pyx_L21_unpacking_done:;
         }
         __Pyx_DECREF_SET(__pyx_v_current_planner, __pyx_t_18);
@@ -8034,19 +8426,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":326
+        /* "MB_Calendar/c_utils.pyx":339
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_ev)
  *               current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, event)
  *               from_loc = event["location"]             # <<<<<<<<<<<<<<
  * 
  *           current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)
  */
-        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 326, __pyx_L1_error)
+        __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_event, __pyx_n_s_location); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 339, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
         __Pyx_DECREF_SET(__pyx_v_from_loc, __pyx_t_16);
         __pyx_t_16 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":311
+        /* "MB_Calendar/c_utils.pyx":324
  *           hour_now = START_HOUR_WORKING        # ora del giorno
  *           from_loc = base
  *           for event in combo:             # <<<<<<<<<<<<<<
@@ -8056,18 +8448,18 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":328
+      /* "MB_Calendar/c_utils.pyx":341
  *               from_loc = event["location"]
  * 
  *           current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)             # <<<<<<<<<<<<<<
  *           if len(current_planner[week])<=max_days_in_week:
  *             old_week = current_planner[week]
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_16, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 328, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_16, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 341, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_16);
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 328, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 341, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      if (unlikely(!__pyx_v_r_to_base)) { __Pyx_RaiseUnboundLocalError("r_to_base"); __PYX_ERR(0, 328, __pyx_L1_error) }
+      if (unlikely(!__pyx_v_r_to_base)) { __Pyx_RaiseUnboundLocalError("r_to_base"); __PYX_ERR(0, 341, __pyx_L1_error) }
       __pyx_t_5 = NULL;
       __pyx_t_17 = 0;
       if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_16))) {
@@ -8083,7 +8475,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_16)) {
         PyObject *__pyx_temp[6] = {__pyx_t_5, __pyx_v_current_planner, __pyx_v_day, __pyx_t_3, __pyx_v_hour_now, __pyx_v_r_to_base};
-        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_16, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_16, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -8092,14 +8484,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_16)) {
         PyObject *__pyx_temp[6] = {__pyx_t_5, __pyx_v_current_planner, __pyx_v_day, __pyx_t_3, __pyx_v_hour_now, __pyx_v_r_to_base};
-        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_16, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_16, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       } else
       #endif
       {
-        __pyx_t_18 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_18 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
         if (__pyx_t_5) {
           __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_18, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -8119,7 +8511,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GIVEREF(__pyx_v_r_to_base);
         PyTuple_SET_ITEM(__pyx_t_18, 4+__pyx_t_17, __pyx_v_r_to_base);
         __pyx_t_3 = 0;
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_16, __pyx_t_18, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_16, __pyx_t_18, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
       }
@@ -8130,7 +8522,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (unlikely(size != 3)) {
           if (size > 3) __Pyx_RaiseTooManyValuesError(3);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 328, __pyx_L1_error)
+          __PYX_ERR(0, 341, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -8146,17 +8538,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_INCREF(__pyx_t_18);
         __Pyx_INCREF(__pyx_t_3);
         #else
-        __pyx_t_16 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_16 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
-        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
-        __pyx_t_3 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_3 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         #endif
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 328, __pyx_L1_error)
+        __pyx_t_5 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 341, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __pyx_t_11 = Py_TYPE(__pyx_t_5)->tp_iternext;
@@ -8166,7 +8558,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GOTREF(__pyx_t_18);
         index = 2; __pyx_t_3 = __pyx_t_11(__pyx_t_5); if (unlikely(!__pyx_t_3)) goto __pyx_L22_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_3);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 3) < 0) __PYX_ERR(0, 328, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_5), 3) < 0) __PYX_ERR(0, 341, __pyx_L1_error)
         __pyx_t_11 = NULL;
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         goto __pyx_L23_unpacking_done;
@@ -8174,7 +8566,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __pyx_t_11 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 328, __pyx_L1_error)
+        __PYX_ERR(0, 341, __pyx_L1_error)
         __pyx_L23_unpacking_done:;
       }
       __Pyx_DECREF_SET(__pyx_v_current_planner, __pyx_t_16);
@@ -8184,38 +8576,38 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":329
+      /* "MB_Calendar/c_utils.pyx":342
  * 
  *           current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)
  *           if len(current_planner[week])<=max_days_in_week:             # <<<<<<<<<<<<<<
  *             old_week = current_planner[week]
  * 
  */
-      __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_current_planner, __pyx_v_week, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 329, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_current_planner, __pyx_v_week, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 342, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_12 = PyObject_Length(__pyx_t_4); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 329, __pyx_L1_error)
+      __pyx_t_12 = PyObject_Length(__pyx_t_4); if (unlikely(__pyx_t_12 == ((Py_ssize_t)-1))) __PYX_ERR(0, 342, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_4 = PyInt_FromSsize_t(__pyx_t_12); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 329, __pyx_L1_error)
+      __pyx_t_4 = PyInt_FromSsize_t(__pyx_t_12); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 342, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_v_max_days_in_week, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 329, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_t_4, __pyx_v_max_days_in_week, Py_LE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 342, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 329, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 342, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_7) {
 
-        /* "MB_Calendar/c_utils.pyx":330
+        /* "MB_Calendar/c_utils.pyx":343
  *           current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)
  *           if len(current_planner[week])<=max_days_in_week:
  *             old_week = current_planner[week]             # <<<<<<<<<<<<<<
  * 
  *     if distance_remaining>0:
  */
-        __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_current_planner, __pyx_v_week, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 330, __pyx_L1_error)
+        __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_current_planner, __pyx_v_week, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 343, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF_SET(__pyx_v_old_week, __pyx_t_3);
         __pyx_t_3 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":329
+        /* "MB_Calendar/c_utils.pyx":342
  * 
  *           current_planner, day, hour_now = add_activity_to_planner_helper(current_planner, day, week, hour_now, r_to_base)
  *           if len(current_planner[week])<=max_days_in_week:             # <<<<<<<<<<<<<<
@@ -8224,7 +8616,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
       }
 
-      /* "MB_Calendar/c_utils.pyx":300
+      /* "MB_Calendar/c_utils.pyx":313
  *       list_permutated = list(permutations)
  * 
  *       for combo in list_permutated:             # <<<<<<<<<<<<<<
@@ -8234,7 +8626,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":285
+    /* "MB_Calendar/c_utils.pyx":298
  *     distance_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50
  *     # print("distance_remaining: "+str(distance_remaining))
  *     if days_out>max_days_in_week:             # <<<<<<<<<<<<<<
@@ -8243,7 +8635,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
   }
 
-  /* "MB_Calendar/c_utils.pyx":332
+  /* "MB_Calendar/c_utils.pyx":345
  *             old_week = current_planner[week]
  * 
  *     if distance_remaining>0:             # <<<<<<<<<<<<<<
@@ -8253,7 +8645,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   __pyx_t_7 = ((__pyx_v_distance_remaining > 0.0) != 0);
   if (__pyx_t_7) {
 
-    /* "MB_Calendar/c_utils.pyx":333
+    /* "MB_Calendar/c_utils.pyx":346
  * 
  *     if distance_remaining>0:
  *         return old_week             # <<<<<<<<<<<<<<
@@ -8265,7 +8657,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     __pyx_r = __pyx_v_old_week;
     goto __pyx_L0;
 
-    /* "MB_Calendar/c_utils.pyx":332
+    /* "MB_Calendar/c_utils.pyx":345
  *             old_week = current_planner[week]
  * 
  *     if distance_remaining>0:             # <<<<<<<<<<<<<<
@@ -8274,7 +8666,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
   }
 
-  /* "MB_Calendar/c_utils.pyx":335
+  /* "MB_Calendar/c_utils.pyx":348
  *         return old_week
  *     else:
  *         reordered_list = []             # <<<<<<<<<<<<<<
@@ -8282,31 +8674,31 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  *         for key, value in old_week.items():
  */
   /*else*/ {
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 335, __pyx_L1_error)
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 348, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_XDECREF_SET(__pyx_v_reordered_list, ((PyObject*)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":336
+    /* "MB_Calendar/c_utils.pyx":349
  *     else:
  *         reordered_list = []
  *         old_text = []             # <<<<<<<<<<<<<<
  *         for key, value in old_week.items():
  *             for act in value:
  */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 336, __pyx_L1_error)
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 349, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_XDECREF_SET(__pyx_v_old_text, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":337
+    /* "MB_Calendar/c_utils.pyx":350
  *         reordered_list = []
  *         old_text = []
  *         for key, value in old_week.items():             # <<<<<<<<<<<<<<
  *             for act in value:
  *                 if act["text"] != old_text:
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_items); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 337, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_old_week, __pyx_n_s_items); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 350, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_4 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -8320,16 +8712,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 337, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 350, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
       __pyx_t_3 = __pyx_t_1; __Pyx_INCREF(__pyx_t_3); __pyx_t_6 = 0;
       __pyx_t_10 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 337, __pyx_L1_error)
+      __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 350, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_10 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 337, __pyx_L1_error)
+      __pyx_t_10 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 350, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     for (;;) {
@@ -8337,17 +8729,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (likely(PyList_CheckExact(__pyx_t_3))) {
           if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 337, __pyx_L1_error)
+          __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 350, __pyx_L1_error)
           #else
-          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 337, __pyx_L1_error)
+          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 350, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         } else {
           if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 337, __pyx_L1_error)
+          __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 350, __pyx_L1_error)
           #else
-          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 337, __pyx_L1_error)
+          __pyx_t_1 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 350, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
           #endif
         }
@@ -8357,7 +8749,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 337, __pyx_L1_error)
+            else __PYX_ERR(0, 350, __pyx_L1_error)
           }
           break;
         }
@@ -8369,7 +8761,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (unlikely(size != 2)) {
           if (size > 2) __Pyx_RaiseTooManyValuesError(2);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 337, __pyx_L1_error)
+          __PYX_ERR(0, 350, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -8382,15 +8774,15 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_INCREF(__pyx_t_4);
         __Pyx_INCREF(__pyx_t_18);
         #else
-        __pyx_t_4 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 337, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 350, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 337, __pyx_L1_error)
+        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 350, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
         #endif
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_16 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 337, __pyx_L1_error)
+        __pyx_t_16 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 350, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         __pyx_t_11 = Py_TYPE(__pyx_t_16)->tp_iternext;
@@ -8398,7 +8790,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GOTREF(__pyx_t_4);
         index = 1; __pyx_t_18 = __pyx_t_11(__pyx_t_16); if (unlikely(!__pyx_t_18)) goto __pyx_L28_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_18);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_16), 2) < 0) __PYX_ERR(0, 337, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_16), 2) < 0) __PYX_ERR(0, 350, __pyx_L1_error)
         __pyx_t_11 = NULL;
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         goto __pyx_L29_unpacking_done;
@@ -8406,7 +8798,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         __pyx_t_11 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 337, __pyx_L1_error)
+        __PYX_ERR(0, 350, __pyx_L1_error)
         __pyx_L29_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_v_key, __pyx_t_4);
@@ -8414,7 +8806,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_XDECREF_SET(__pyx_v_value, __pyx_t_18);
       __pyx_t_18 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":338
+      /* "MB_Calendar/c_utils.pyx":351
  *         old_text = []
  *         for key, value in old_week.items():
  *             for act in value:             # <<<<<<<<<<<<<<
@@ -8425,26 +8817,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __pyx_t_1 = __pyx_v_value; __Pyx_INCREF(__pyx_t_1); __pyx_t_12 = 0;
         __pyx_t_13 = NULL;
       } else {
-        __pyx_t_12 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 338, __pyx_L1_error)
+        __pyx_t_12 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 351, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_13 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 338, __pyx_L1_error)
+        __pyx_t_13 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 351, __pyx_L1_error)
       }
       for (;;) {
         if (likely(!__pyx_t_13)) {
           if (likely(PyList_CheckExact(__pyx_t_1))) {
             if (__pyx_t_12 >= PyList_GET_SIZE(__pyx_t_1)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_18 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_12); __Pyx_INCREF(__pyx_t_18); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 338, __pyx_L1_error)
+            __pyx_t_18 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_12); __Pyx_INCREF(__pyx_t_18); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 351, __pyx_L1_error)
             #else
-            __pyx_t_18 = PySequence_ITEM(__pyx_t_1, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 338, __pyx_L1_error)
+            __pyx_t_18 = PySequence_ITEM(__pyx_t_1, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 351, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_18);
             #endif
           } else {
             if (__pyx_t_12 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_18 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_12); __Pyx_INCREF(__pyx_t_18); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 338, __pyx_L1_error)
+            __pyx_t_18 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_12); __Pyx_INCREF(__pyx_t_18); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 351, __pyx_L1_error)
             #else
-            __pyx_t_18 = PySequence_ITEM(__pyx_t_1, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 338, __pyx_L1_error)
+            __pyx_t_18 = PySequence_ITEM(__pyx_t_1, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 351, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_18);
             #endif
           }
@@ -8454,7 +8846,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 338, __pyx_L1_error)
+              else __PYX_ERR(0, 351, __pyx_L1_error)
             }
             break;
           }
@@ -8463,29 +8855,29 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_act, __pyx_t_18);
         __pyx_t_18 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":339
+        /* "MB_Calendar/c_utils.pyx":352
  *         for key, value in old_week.items():
  *             for act in value:
  *                 if act["text"] != old_text:             # <<<<<<<<<<<<<<
  *                     reordered_list.insert(0, act.copy())
  *                     old_text = act["text"]
  */
-        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 339, __pyx_L1_error)
+        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 352, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
-        __pyx_t_4 = PyObject_RichCompare(__pyx_t_18, __pyx_v_old_text, Py_NE); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 339, __pyx_L1_error)
+        __pyx_t_4 = PyObject_RichCompare(__pyx_t_18, __pyx_v_old_text, Py_NE); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
-        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 339, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 352, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         if (__pyx_t_7) {
 
-          /* "MB_Calendar/c_utils.pyx":340
+          /* "MB_Calendar/c_utils.pyx":353
  *             for act in value:
  *                 if act["text"] != old_text:
  *                     reordered_list.insert(0, act.copy())             # <<<<<<<<<<<<<<
  *                     old_text = act["text"]
  *                 else:
  */
-          __pyx_t_18 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_copy); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 340, __pyx_L1_error)
+          __pyx_t_18 = __Pyx_PyObject_GetAttrStr(__pyx_v_act, __pyx_n_s_copy); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 353, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_18);
           __pyx_t_16 = NULL;
           if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_18))) {
@@ -8499,25 +8891,25 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           }
           __pyx_t_4 = (__pyx_t_16) ? __Pyx_PyObject_CallOneArg(__pyx_t_18, __pyx_t_16) : __Pyx_PyObject_CallNoArg(__pyx_t_18);
           __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
-          if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 340, __pyx_L1_error)
+          if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 353, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_4);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
-          __pyx_t_14 = PyList_Insert(__pyx_v_reordered_list, 0, __pyx_t_4); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 340, __pyx_L1_error)
+          __pyx_t_14 = PyList_Insert(__pyx_v_reordered_list, 0, __pyx_t_4); if (unlikely(__pyx_t_14 == ((int)-1))) __PYX_ERR(0, 353, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":341
+          /* "MB_Calendar/c_utils.pyx":354
  *                 if act["text"] != old_text:
  *                     reordered_list.insert(0, act.copy())
  *                     old_text = act["text"]             # <<<<<<<<<<<<<<
  *                 else:
  *                     reordered_list[0]["duration"] += act["duration"]
  */
-          __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 341, __pyx_L1_error)
+          __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_text); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 354, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_4);
           __Pyx_DECREF_SET(__pyx_v_old_text, __pyx_t_4);
           __pyx_t_4 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":339
+          /* "MB_Calendar/c_utils.pyx":352
  *         for key, value in old_week.items():
  *             for act in value:
  *                 if act["text"] != old_text:             # <<<<<<<<<<<<<<
@@ -8527,7 +8919,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           goto __pyx_L32;
         }
 
-        /* "MB_Calendar/c_utils.pyx":343
+        /* "MB_Calendar/c_utils.pyx":356
  *                     old_text = act["text"]
  *                 else:
  *                     reordered_list[0]["duration"] += act["duration"]             # <<<<<<<<<<<<<<
@@ -8535,26 +8927,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  *         day = 1
  */
         /*else*/ {
-          __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_reordered_list, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 343, __pyx_L1_error)
+          __pyx_t_4 = __Pyx_GetItemInt_List(__pyx_v_reordered_list, 0, long, 1, __Pyx_PyInt_From_long, 1, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 356, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_4);
           __Pyx_INCREF(__pyx_n_s_duration);
           __pyx_t_15 = __pyx_n_s_duration;
-          __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_t_15); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 343, __pyx_L1_error)
+          __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_t_4, __pyx_t_15); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 356, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_18);
-          __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 343, __pyx_L1_error)
+          __pyx_t_16 = __Pyx_PyObject_Dict_GetItem(__pyx_v_act, __pyx_n_s_duration); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 356, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_16);
-          __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_t_18, __pyx_t_16); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 343, __pyx_L1_error)
+          __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_t_18, __pyx_t_16); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 356, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
-          if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_t_15, __pyx_t_5) < 0)) __PYX_ERR(0, 343, __pyx_L1_error)
+          if (unlikely(PyObject_SetItem(__pyx_t_4, __pyx_t_15, __pyx_t_5) < 0)) __PYX_ERR(0, 356, __pyx_L1_error)
           __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
           __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         }
         __pyx_L32:;
 
-        /* "MB_Calendar/c_utils.pyx":338
+        /* "MB_Calendar/c_utils.pyx":351
  *         old_text = []
  *         for key, value in old_week.items():
  *             for act in value:             # <<<<<<<<<<<<<<
@@ -8564,7 +8956,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       }
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":337
+      /* "MB_Calendar/c_utils.pyx":350
  *         reordered_list = []
  *         old_text = []
  *         for key, value in old_week.items():             # <<<<<<<<<<<<<<
@@ -8574,7 +8966,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":344
+    /* "MB_Calendar/c_utils.pyx":357
  *                 else:
  *                     reordered_list[0]["duration"] += act["duration"]
  *         week = 1             # <<<<<<<<<<<<<<
@@ -8583,7 +8975,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
     __pyx_v_week = 1;
 
-    /* "MB_Calendar/c_utils.pyx":345
+    /* "MB_Calendar/c_utils.pyx":358
  *                     reordered_list[0]["duration"] += act["duration"]
  *         week = 1
  *         day = 1             # <<<<<<<<<<<<<<
@@ -8593,50 +8985,50 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     __Pyx_INCREF(__pyx_int_1);
     __Pyx_XDECREF_SET(__pyx_v_day, __pyx_int_1);
 
-    /* "MB_Calendar/c_utils.pyx":347
+    /* "MB_Calendar/c_utils.pyx":360
  *         day = 1
  *         new_planner = {
  *             week: {             # <<<<<<<<<<<<<<
  *                 day: []
  *             }
  */
-    __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 347, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 347, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
 
-    /* "MB_Calendar/c_utils.pyx":348
+    /* "MB_Calendar/c_utils.pyx":361
  *         new_planner = {
  *             week: {
  *                 day: []             # <<<<<<<<<<<<<<
  *             }
  *         }
  */
-    __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 348, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 361, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 348, __pyx_L1_error)
+    __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 361, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (PyDict_SetItem(__pyx_t_4, __pyx_v_day, __pyx_t_5) < 0) __PYX_ERR(0, 348, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_4, __pyx_v_day, __pyx_t_5) < 0) __PYX_ERR(0, 361, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (PyDict_SetItem(__pyx_t_3, __pyx_t_1, __pyx_t_4) < 0) __PYX_ERR(0, 347, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_t_1, __pyx_t_4) < 0) __PYX_ERR(0, 360, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_new_planner = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":351
+    /* "MB_Calendar/c_utils.pyx":364
  *             }
  *         }
  *         hour_now = START_HOUR_WORKING             # <<<<<<<<<<<<<<
  *         for activity in reordered_list:
  *             new_planner, day, hour_now = add_activity_to_planner_helper(new_planner, day, week, hour_now, activity)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 351, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_START_HOUR_WORKING); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 364, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_XDECREF_SET(__pyx_v_hour_now, __pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":352
+    /* "MB_Calendar/c_utils.pyx":365
  *         }
  *         hour_now = START_HOUR_WORKING
  *         for activity in reordered_list:             # <<<<<<<<<<<<<<
@@ -8647,24 +9039,24 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     for (;;) {
       if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 352, __pyx_L1_error)
+      __pyx_t_4 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_4); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 365, __pyx_L1_error)
       #else
-      __pyx_t_4 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 352, __pyx_L1_error)
+      __pyx_t_4 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       #endif
       __Pyx_XDECREF_SET(__pyx_v_activity, __pyx_t_4);
       __pyx_t_4 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":353
+      /* "MB_Calendar/c_utils.pyx":366
  *         hour_now = START_HOUR_WORKING
  *         for activity in reordered_list:
  *             new_planner, day, hour_now = add_activity_to_planner_helper(new_planner, day, week, hour_now, activity)             # <<<<<<<<<<<<<<
  * 
  *         if day>max_days_in_week:
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 353, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_add_activity_to_planner_helper); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 366, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 353, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_week); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_16 = NULL;
       __pyx_t_17 = 0;
@@ -8681,7 +9073,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_1)) {
         PyObject *__pyx_temp[6] = {__pyx_t_16, __pyx_v_new_planner, __pyx_v_day, __pyx_t_5, __pyx_v_hour_now, __pyx_v_activity};
-        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -8690,14 +9082,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
         PyObject *__pyx_temp[6] = {__pyx_t_16, __pyx_v_new_planner, __pyx_v_day, __pyx_t_5, __pyx_v_hour_now, __pyx_v_activity};
-        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_17, 5+__pyx_t_17); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_16); __pyx_t_16 = 0;
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       } else
       #endif
       {
-        __pyx_t_18 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_18 = PyTuple_New(5+__pyx_t_17); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
         if (__pyx_t_16) {
           __Pyx_GIVEREF(__pyx_t_16); PyTuple_SET_ITEM(__pyx_t_18, 0, __pyx_t_16); __pyx_t_16 = NULL;
@@ -8717,7 +9109,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GIVEREF(__pyx_v_activity);
         PyTuple_SET_ITEM(__pyx_t_18, 4+__pyx_t_17, __pyx_v_activity);
         __pyx_t_5 = 0;
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_18, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_18, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
       }
@@ -8728,7 +9120,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (unlikely(size != 3)) {
           if (size > 3) __Pyx_RaiseTooManyValuesError(3);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          __PYX_ERR(0, 353, __pyx_L1_error)
+          __PYX_ERR(0, 366, __pyx_L1_error)
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -8744,17 +9136,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_INCREF(__pyx_t_18);
         __Pyx_INCREF(__pyx_t_5);
         #else
-        __pyx_t_1 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
-        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_18 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
-        __pyx_t_5 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_5 = PySequence_ITEM(sequence, 2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         #endif
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_16 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 353, __pyx_L1_error)
+        __pyx_t_16 = PyObject_GetIter(__pyx_t_4); if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 366, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_16);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __pyx_t_11 = Py_TYPE(__pyx_t_16)->tp_iternext;
@@ -8764,7 +9156,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_GOTREF(__pyx_t_18);
         index = 2; __pyx_t_5 = __pyx_t_11(__pyx_t_16); if (unlikely(!__pyx_t_5)) goto __pyx_L35_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_5);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_16), 3) < 0) __PYX_ERR(0, 353, __pyx_L1_error)
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_11(__pyx_t_16), 3) < 0) __PYX_ERR(0, 366, __pyx_L1_error)
         __pyx_t_11 = NULL;
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         goto __pyx_L36_unpacking_done;
@@ -8772,7 +9164,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
         __pyx_t_11 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        __PYX_ERR(0, 353, __pyx_L1_error)
+        __PYX_ERR(0, 366, __pyx_L1_error)
         __pyx_L36_unpacking_done:;
       }
       __Pyx_DECREF_SET(__pyx_v_new_planner, __pyx_t_1);
@@ -8782,7 +9174,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_DECREF_SET(__pyx_v_hour_now, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":352
+      /* "MB_Calendar/c_utils.pyx":365
  *         }
  *         hour_now = START_HOUR_WORKING
  *         for activity in reordered_list:             # <<<<<<<<<<<<<<
@@ -8792,19 +9184,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":355
+    /* "MB_Calendar/c_utils.pyx":368
  *             new_planner, day, hour_now = add_activity_to_planner_helper(new_planner, day, week, hour_now, activity)
  * 
  *         if day>max_days_in_week:             # <<<<<<<<<<<<<<
  *             return old_week
  *         # quando rigiro il planner gli eventi in una giornata devono essere alemno 3 ore
  */
-    __pyx_t_3 = PyObject_RichCompare(__pyx_v_day, __pyx_v_max_days_in_week, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 355, __pyx_L1_error)
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 355, __pyx_L1_error)
+    __pyx_t_3 = PyObject_RichCompare(__pyx_v_day, __pyx_v_max_days_in_week, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 368, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 368, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     if (__pyx_t_7) {
 
-      /* "MB_Calendar/c_utils.pyx":356
+      /* "MB_Calendar/c_utils.pyx":369
  * 
  *         if day>max_days_in_week:
  *             return old_week             # <<<<<<<<<<<<<<
@@ -8816,7 +9208,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __pyx_r = __pyx_v_old_week;
       goto __pyx_L0;
 
-      /* "MB_Calendar/c_utils.pyx":355
+      /* "MB_Calendar/c_utils.pyx":368
  *             new_planner, day, hour_now = add_activity_to_planner_helper(new_planner, day, week, hour_now, activity)
  * 
  *         if day>max_days_in_week:             # <<<<<<<<<<<<<<
@@ -8825,22 +9217,22 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
     }
 
-    /* "MB_Calendar/c_utils.pyx":358
+    /* "MB_Calendar/c_utils.pyx":371
  *             return old_week
  *         # quando rigiro il planner gli eventi in una giornata devono essere alemno 3 ore
  *         for day in new_planner[1]:             # <<<<<<<<<<<<<<
  *           ev_time_in_day = 0
  *           for activity in new_planner[1][day]:
  */
-    __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 358, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 371, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
       __pyx_t_4 = __pyx_t_3; __Pyx_INCREF(__pyx_t_4); __pyx_t_6 = 0;
       __pyx_t_10 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 358, __pyx_L1_error)
+      __pyx_t_6 = -1; __pyx_t_4 = PyObject_GetIter(__pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 371, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 358, __pyx_L1_error)
+      __pyx_t_10 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 371, __pyx_L1_error)
     }
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     for (;;) {
@@ -8848,17 +9240,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         if (likely(PyList_CheckExact(__pyx_t_4))) {
           if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_4)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 358, __pyx_L1_error)
+          __pyx_t_3 = PyList_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 371, __pyx_L1_error)
           #else
-          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 358, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 371, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         } else {
           if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_4)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 358, __pyx_L1_error)
+          __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_4, __pyx_t_6); __Pyx_INCREF(__pyx_t_3); __pyx_t_6++; if (unlikely(0 < 0)) __PYX_ERR(0, 371, __pyx_L1_error)
           #else
-          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 358, __pyx_L1_error)
+          __pyx_t_3 = PySequence_ITEM(__pyx_t_4, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 371, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_3);
           #endif
         }
@@ -8868,7 +9260,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 358, __pyx_L1_error)
+            else __PYX_ERR(0, 371, __pyx_L1_error)
           }
           break;
         }
@@ -8877,7 +9269,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_DECREF_SET(__pyx_v_day, __pyx_t_3);
       __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":359
+      /* "MB_Calendar/c_utils.pyx":372
  *         # quando rigiro il planner gli eventi in una giornata devono essere alemno 3 ore
  *         for day in new_planner[1]:
  *           ev_time_in_day = 0             # <<<<<<<<<<<<<<
@@ -8887,25 +9279,25 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       __Pyx_INCREF(__pyx_int_0);
       __Pyx_XDECREF_SET(__pyx_v_ev_time_in_day, __pyx_int_0);
 
-      /* "MB_Calendar/c_utils.pyx":360
+      /* "MB_Calendar/c_utils.pyx":373
  *         for day in new_planner[1]:
  *           ev_time_in_day = 0
  *           for activity in new_planner[1][day]:             # <<<<<<<<<<<<<<
  *             if activity["text"].startswith("->")==False:
  *               ev_time_in_day += activity["duration"]
  */
-      __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 373, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_day); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 373, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (likely(PyList_CheckExact(__pyx_t_5)) || PyTuple_CheckExact(__pyx_t_5)) {
         __pyx_t_3 = __pyx_t_5; __Pyx_INCREF(__pyx_t_3); __pyx_t_12 = 0;
         __pyx_t_13 = NULL;
       } else {
-        __pyx_t_12 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 360, __pyx_L1_error)
+        __pyx_t_12 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 373, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_13 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 360, __pyx_L1_error)
+        __pyx_t_13 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 373, __pyx_L1_error)
       }
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       for (;;) {
@@ -8913,17 +9305,17 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
           if (likely(PyList_CheckExact(__pyx_t_3))) {
             if (__pyx_t_12 >= PyList_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_5 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_12); __Pyx_INCREF(__pyx_t_5); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 360, __pyx_L1_error)
+            __pyx_t_5 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_12); __Pyx_INCREF(__pyx_t_5); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 373, __pyx_L1_error)
             #else
-            __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
+            __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 373, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_5);
             #endif
           } else {
             if (__pyx_t_12 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
             #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-            __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_12); __Pyx_INCREF(__pyx_t_5); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 360, __pyx_L1_error)
+            __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_12); __Pyx_INCREF(__pyx_t_5); __pyx_t_12++; if (unlikely(0 < 0)) __PYX_ERR(0, 373, __pyx_L1_error)
             #else
-            __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 360, __pyx_L1_error)
+            __pyx_t_5 = PySequence_ITEM(__pyx_t_3, __pyx_t_12); __pyx_t_12++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 373, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_5);
             #endif
           }
@@ -8933,7 +9325,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
             PyObject* exc_type = PyErr_Occurred();
             if (exc_type) {
               if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-              else __PYX_ERR(0, 360, __pyx_L1_error)
+              else __PYX_ERR(0, 373, __pyx_L1_error)
             }
             break;
           }
@@ -8942,16 +9334,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_XDECREF_SET(__pyx_v_activity, __pyx_t_5);
         __pyx_t_5 = 0;
 
-        /* "MB_Calendar/c_utils.pyx":361
+        /* "MB_Calendar/c_utils.pyx":374
  *           ev_time_in_day = 0
  *           for activity in new_planner[1][day]:
  *             if activity["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
  *               ev_time_in_day += activity["duration"]
  *           if ev_time_in_day<3 and day<max_days_in_week:
  */
-        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 361, __pyx_L1_error)
+        __pyx_t_18 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_text); if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 374, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_18);
-        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_18, __pyx_n_s_startswith); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 361, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_18, __pyx_n_s_startswith); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 374, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
         __pyx_t_18 = NULL;
@@ -8966,31 +9358,31 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         }
         __pyx_t_5 = (__pyx_t_18) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_18, __pyx_kp_s_) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s_);
         __Pyx_XDECREF(__pyx_t_18); __pyx_t_18 = 0;
-        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 361, __pyx_L1_error)
+        if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 374, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_1 = PyObject_RichCompare(__pyx_t_5, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 361, __pyx_L1_error)
+        __pyx_t_1 = PyObject_RichCompare(__pyx_t_5, Py_False, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 374, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 361, __pyx_L1_error)
+        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 374, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         if (__pyx_t_7) {
 
-          /* "MB_Calendar/c_utils.pyx":362
+          /* "MB_Calendar/c_utils.pyx":375
  *           for activity in new_planner[1][day]:
  *             if activity["text"].startswith("->")==False:
  *               ev_time_in_day += activity["duration"]             # <<<<<<<<<<<<<<
  *           if ev_time_in_day<3 and day<max_days_in_week:
  *             return old_week
  */
-          __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 362, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_activity, __pyx_n_s_duration); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 375, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
-          __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_v_ev_time_in_day, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 362, __pyx_L1_error)
+          __pyx_t_5 = PyNumber_InPlaceAdd(__pyx_v_ev_time_in_day, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 375, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
           __Pyx_DECREF_SET(__pyx_v_ev_time_in_day, __pyx_t_5);
           __pyx_t_5 = 0;
 
-          /* "MB_Calendar/c_utils.pyx":361
+          /* "MB_Calendar/c_utils.pyx":374
  *           ev_time_in_day = 0
  *           for activity in new_planner[1][day]:
  *             if activity["text"].startswith("->")==False:             # <<<<<<<<<<<<<<
@@ -8999,7 +9391,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
         }
 
-        /* "MB_Calendar/c_utils.pyx":360
+        /* "MB_Calendar/c_utils.pyx":373
  *         for day in new_planner[1]:
  *           ev_time_in_day = 0
  *           for activity in new_planner[1][day]:             # <<<<<<<<<<<<<<
@@ -9009,29 +9401,29 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":363
+      /* "MB_Calendar/c_utils.pyx":376
  *             if activity["text"].startswith("->")==False:
  *               ev_time_in_day += activity["duration"]
  *           if ev_time_in_day<3 and day<max_days_in_week:             # <<<<<<<<<<<<<<
  *             return old_week
  *         return new_planner[1]
  */
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_ev_time_in_day, __pyx_int_3, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 363, __pyx_L1_error)
-      __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 363, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_v_ev_time_in_day, __pyx_int_3, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 376, __pyx_L1_error)
+      __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       if (__pyx_t_19) {
       } else {
         __pyx_t_7 = __pyx_t_19;
         goto __pyx_L44_bool_binop_done;
       }
-      __pyx_t_3 = PyObject_RichCompare(__pyx_v_day, __pyx_v_max_days_in_week, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 363, __pyx_L1_error)
-      __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 363, __pyx_L1_error)
+      __pyx_t_3 = PyObject_RichCompare(__pyx_v_day, __pyx_v_max_days_in_week, Py_LT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 376, __pyx_L1_error)
+      __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_t_7 = __pyx_t_19;
       __pyx_L44_bool_binop_done:;
       if (__pyx_t_7) {
 
-        /* "MB_Calendar/c_utils.pyx":364
+        /* "MB_Calendar/c_utils.pyx":377
  *               ev_time_in_day += activity["duration"]
  *           if ev_time_in_day<3 and day<max_days_in_week:
  *             return old_week             # <<<<<<<<<<<<<<
@@ -9044,7 +9436,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         goto __pyx_L0;
 
-        /* "MB_Calendar/c_utils.pyx":363
+        /* "MB_Calendar/c_utils.pyx":376
  *             if activity["text"].startswith("->")==False:
  *               ev_time_in_day += activity["duration"]
  *           if ev_time_in_day<3 and day<max_days_in_week:             # <<<<<<<<<<<<<<
@@ -9053,7 +9445,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  */
       }
 
-      /* "MB_Calendar/c_utils.pyx":358
+      /* "MB_Calendar/c_utils.pyx":371
  *             return old_week
  *         # quando rigiro il planner gli eventi in una giornata devono essere alemno 3 ore
  *         for day in new_planner[1]:             # <<<<<<<<<<<<<<
@@ -9063,7 +9455,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":365
+    /* "MB_Calendar/c_utils.pyx":378
  *           if ev_time_in_day<3 and day<max_days_in_week:
  *             return old_week
  *         return new_planner[1]             # <<<<<<<<<<<<<<
@@ -9071,14 +9463,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
  * def find_right_route(routes, from_loc, to_loc):
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_new_planner, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 378, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_r = __pyx_t_4;
     __pyx_t_4 = 0;
     goto __pyx_L0;
   }
 
-  /* "MB_Calendar/c_utils.pyx":274
+  /* "MB_Calendar/c_utils.pyx":287
  *     return final_planner
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):             # <<<<<<<<<<<<<<
@@ -9125,7 +9517,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_6reorganize_week(CYTHON_UNUSED 
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":367
+/* "MB_Calendar/c_utils.pyx":380
  *         return new_planner[1]
  * 
  * def find_right_route(routes, from_loc, to_loc):             # <<<<<<<<<<<<<<
@@ -9172,17 +9564,17 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_9find_right_route(PyObject *__p
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_from_loc)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, 1); __PYX_ERR(0, 367, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, 1); __PYX_ERR(0, 380, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_to_loc)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, 2); __PYX_ERR(0, 367, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, 2); __PYX_ERR(0, 380, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_right_route") < 0)) __PYX_ERR(0, 367, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_right_route") < 0)) __PYX_ERR(0, 380, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -9197,7 +9589,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_9find_right_route(PyObject *__p
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 367, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("find_right_route", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 380, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.find_right_route", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9227,7 +9619,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_right_route", 0);
 
-  /* "MB_Calendar/c_utils.pyx":375
+  /* "MB_Calendar/c_utils.pyx":388
  *     @output right_route: dict of route
  *     """
  *     right_route = None             # <<<<<<<<<<<<<<
@@ -9237,7 +9629,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
   __Pyx_INCREF(Py_None);
   __pyx_v_right_route = Py_None;
 
-  /* "MB_Calendar/c_utils.pyx":376
+  /* "MB_Calendar/c_utils.pyx":389
  *     """
  *     right_route = None
  *     for r in routes:             # <<<<<<<<<<<<<<
@@ -9248,26 +9640,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
     __pyx_t_1 = __pyx_v_routes; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_routes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 376, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_routes); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 376, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 389, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 389, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 376, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 389, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 376, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -9277,7 +9669,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 376, __pyx_L1_error)
+          else __PYX_ERR(0, 389, __pyx_L1_error)
         }
         break;
       }
@@ -9286,28 +9678,28 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
     __Pyx_XDECREF_SET(__pyx_v_r, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":377
+    /* "MB_Calendar/c_utils.pyx":390
  *     right_route = None
  *     for r in routes:
  *         if (r["from"] == from_loc and  r["to"] == to_loc) or \             # <<<<<<<<<<<<<<
  *             (r["to"] == from_loc and  r["from"] == to_loc):
  *             right_route = r
  */
-    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = PyObject_RichCompare(__pyx_t_4, __pyx_v_from_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_6 = PyObject_RichCompare(__pyx_t_4, __pyx_v_from_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (!__pyx_t_7) {
       goto __pyx_L7_next_or;
     } else {
     }
-    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_v_to_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_v_to_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     if (!__pyx_t_7) {
     } else {
@@ -9316,34 +9708,34 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
     }
     __pyx_L7_next_or:;
 
-    /* "MB_Calendar/c_utils.pyx":378
+    /* "MB_Calendar/c_utils.pyx":391
  *     for r in routes:
  *         if (r["from"] == from_loc and  r["to"] == to_loc) or \
  *             (r["to"] == from_loc and  r["from"] == to_loc):             # <<<<<<<<<<<<<<
  *             right_route = r
  * 
  */
-    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = PyObject_RichCompare(__pyx_t_4, __pyx_v_from_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_6 = PyObject_RichCompare(__pyx_t_4, __pyx_v_from_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (__pyx_t_7) {
     } else {
       __pyx_t_5 = __pyx_t_7;
       goto __pyx_L6_bool_binop_done;
     }
-    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_v_to_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_4 = PyObject_RichCompare(__pyx_t_6, __pyx_v_to_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 378, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 391, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_5 = __pyx_t_7;
     __pyx_L6_bool_binop_done:;
 
-    /* "MB_Calendar/c_utils.pyx":377
+    /* "MB_Calendar/c_utils.pyx":390
  *     right_route = None
  *     for r in routes:
  *         if (r["from"] == from_loc and  r["to"] == to_loc) or \             # <<<<<<<<<<<<<<
@@ -9352,7 +9744,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
  */
     if (__pyx_t_5) {
 
-      /* "MB_Calendar/c_utils.pyx":379
+      /* "MB_Calendar/c_utils.pyx":392
  *         if (r["from"] == from_loc and  r["to"] == to_loc) or \
  *             (r["to"] == from_loc and  r["from"] == to_loc):
  *             right_route = r             # <<<<<<<<<<<<<<
@@ -9362,7 +9754,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
       __Pyx_INCREF(__pyx_v_r);
       __Pyx_DECREF_SET(__pyx_v_right_route, __pyx_v_r);
 
-      /* "MB_Calendar/c_utils.pyx":377
+      /* "MB_Calendar/c_utils.pyx":390
  *     right_route = None
  *     for r in routes:
  *         if (r["from"] == from_loc and  r["to"] == to_loc) or \             # <<<<<<<<<<<<<<
@@ -9371,7 +9763,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
  */
     }
 
-    /* "MB_Calendar/c_utils.pyx":376
+    /* "MB_Calendar/c_utils.pyx":389
  *     """
  *     right_route = None
  *     for r in routes:             # <<<<<<<<<<<<<<
@@ -9381,7 +9773,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":381
+  /* "MB_Calendar/c_utils.pyx":394
  *             right_route = r
  * 
  *     return right_route.copy()             # <<<<<<<<<<<<<<
@@ -9389,7 +9781,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_right_route, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_right_route, __pyx_n_s_copy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_6 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -9403,14 +9795,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
   }
   __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 381, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 394, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "MB_Calendar/c_utils.pyx":367
+  /* "MB_Calendar/c_utils.pyx":380
  *         return new_planner[1]
  * 
  * def find_right_route(routes, from_loc, to_loc):             # <<<<<<<<<<<<<<
@@ -9433,7 +9825,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_8find_right_route(CYTHON_UNUSED
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":384
+/* "MB_Calendar/c_utils.pyx":397
  * 
  * 
  * def find_best_permutation(events, routes):             # <<<<<<<<<<<<<<
@@ -9476,11 +9868,11 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_11find_best_permutation(PyObjec
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_routes)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("find_best_permutation", 1, 2, 2, 1); __PYX_ERR(0, 384, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("find_best_permutation", 1, 2, 2, 1); __PYX_ERR(0, 397, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_best_permutation") < 0)) __PYX_ERR(0, 384, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "find_best_permutation") < 0)) __PYX_ERR(0, 397, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -9493,7 +9885,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_11find_best_permutation(PyObjec
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("find_best_permutation", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 384, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("find_best_permutation", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 397, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.find_best_permutation", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -9535,16 +9927,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("find_best_permutation", 0);
 
-  /* "MB_Calendar/c_utils.pyx":385
+  /* "MB_Calendar/c_utils.pyx":398
  * 
  * def find_best_permutation(events, routes):
  *   best_list = [events, events[::-1]]             # <<<<<<<<<<<<<<
  *   for ev in events:
  *     remaining_evs = events.copy()
  */
-  __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_events, __pyx_slice__4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_events, __pyx_slice__4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(__pyx_v_events);
   __Pyx_GIVEREF(__pyx_v_events);
@@ -9555,7 +9947,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
   __pyx_v_best_list = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":386
+  /* "MB_Calendar/c_utils.pyx":399
  * def find_best_permutation(events, routes):
  *   best_list = [events, events[::-1]]
  *   for ev in events:             # <<<<<<<<<<<<<<
@@ -9566,26 +9958,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     __pyx_t_2 = __pyx_v_events; __Pyx_INCREF(__pyx_t_2); __pyx_t_3 = 0;
     __pyx_t_4 = NULL;
   } else {
-    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_events); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 386, __pyx_L1_error)
+    __pyx_t_3 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_v_events); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 399, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 386, __pyx_L1_error)
+    __pyx_t_4 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 399, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_4)) {
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_3 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 386, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 399, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 399, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_3 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 386, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_3); __Pyx_INCREF(__pyx_t_1); __pyx_t_3++; if (unlikely(0 < 0)) __PYX_ERR(0, 399, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 386, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 399, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -9595,7 +9987,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 386, __pyx_L1_error)
+          else __PYX_ERR(0, 399, __pyx_L1_error)
         }
         break;
       }
@@ -9604,14 +9996,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     __Pyx_XDECREF_SET(__pyx_v_ev, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":387
+    /* "MB_Calendar/c_utils.pyx":400
  *   best_list = [events, events[::-1]]
  *   for ev in events:
  *     remaining_evs = events.copy()             # <<<<<<<<<<<<<<
  *     current_list = [ev]
  *     remaining_evs.remove(ev)
  */
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_events, __pyx_n_s_copy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 387, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_events, __pyx_n_s_copy); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 400, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_6 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -9625,20 +10017,20 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     }
     __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_5);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 387, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 400, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_XDECREF_SET(__pyx_v_remaining_evs, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":388
+    /* "MB_Calendar/c_utils.pyx":401
  *   for ev in events:
  *     remaining_evs = events.copy()
  *     current_list = [ev]             # <<<<<<<<<<<<<<
  *     remaining_evs.remove(ev)
  *     remaining_orded = order_remaining_events(ev["location"], remaining_evs, routes)
  */
-    __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 388, __pyx_L1_error)
+    __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 401, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_INCREF(__pyx_v_ev);
     __Pyx_GIVEREF(__pyx_v_ev);
@@ -9646,14 +10038,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     __Pyx_XDECREF_SET(__pyx_v_current_list, ((PyObject*)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":389
+    /* "MB_Calendar/c_utils.pyx":402
  *     remaining_evs = events.copy()
  *     current_list = [ev]
  *     remaining_evs.remove(ev)             # <<<<<<<<<<<<<<
  *     remaining_orded = order_remaining_events(ev["location"], remaining_evs, routes)
  *     current_list.extend(remaining_orded)
  */
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_remaining_evs, __pyx_n_s_remove); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 389, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_remaining_evs, __pyx_n_s_remove); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 402, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_6 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
@@ -9667,21 +10059,21 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     }
     __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_6, __pyx_v_ev) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_v_ev);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 402, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":390
+    /* "MB_Calendar/c_utils.pyx":403
  *     current_list = [ev]
  *     remaining_evs.remove(ev)
  *     remaining_orded = order_remaining_events(ev["location"], remaining_evs, routes)             # <<<<<<<<<<<<<<
  *     current_list.extend(remaining_orded)
  *     best_list.append(current_list)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_order_remaining_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 390, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_order_remaining_events); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 403, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 390, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 403, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_7 = NULL;
     __pyx_t_8 = 0;
@@ -9698,7 +10090,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_t_6, __pyx_v_remaining_evs, __pyx_v_routes};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 403, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -9707,14 +10099,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_t_6, __pyx_v_remaining_evs, __pyx_v_routes};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 403, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 390, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 403, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       if (__pyx_t_7) {
         __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -9728,7 +10120,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       __Pyx_GIVEREF(__pyx_v_routes);
       PyTuple_SET_ITEM(__pyx_t_9, 2+__pyx_t_8, __pyx_v_routes);
       __pyx_t_6 = 0;
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 390, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 403, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
@@ -9736,37 +10128,37 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     __Pyx_XDECREF_SET(__pyx_v_remaining_orded, __pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":391
+    /* "MB_Calendar/c_utils.pyx":404
  *     remaining_evs.remove(ev)
  *     remaining_orded = order_remaining_events(ev["location"], remaining_evs, routes)
  *     current_list.extend(remaining_orded)             # <<<<<<<<<<<<<<
  *     best_list.append(current_list)
  *     best_list.append(current_list[::-1])
  */
-    __pyx_t_10 = __Pyx_PyList_Extend(__pyx_v_current_list, __pyx_v_remaining_orded); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 391, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_Extend(__pyx_v_current_list, __pyx_v_remaining_orded); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 404, __pyx_L1_error)
 
-    /* "MB_Calendar/c_utils.pyx":392
+    /* "MB_Calendar/c_utils.pyx":405
  *     remaining_orded = order_remaining_events(ev["location"], remaining_evs, routes)
  *     current_list.extend(remaining_orded)
  *     best_list.append(current_list)             # <<<<<<<<<<<<<<
  *     best_list.append(current_list[::-1])
  *     for r_ev in remaining_evs:
  */
-    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_v_current_list); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 392, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_v_current_list); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 405, __pyx_L1_error)
 
-    /* "MB_Calendar/c_utils.pyx":393
+    /* "MB_Calendar/c_utils.pyx":406
  *     current_list.extend(remaining_orded)
  *     best_list.append(current_list)
  *     best_list.append(current_list[::-1])             # <<<<<<<<<<<<<<
  *     for r_ev in remaining_evs:
  *       new_list = [ev, r_ev]
  */
-    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_current_list, __pyx_slice__4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 393, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_current_list, __pyx_slice__4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 406, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_t_1); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 393, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_t_1); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 406, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":394
+    /* "MB_Calendar/c_utils.pyx":407
  *     best_list.append(current_list)
  *     best_list.append(current_list[::-1])
  *     for r_ev in remaining_evs:             # <<<<<<<<<<<<<<
@@ -9777,26 +10169,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       __pyx_t_1 = __pyx_v_remaining_evs; __Pyx_INCREF(__pyx_t_1); __pyx_t_11 = 0;
       __pyx_t_12 = NULL;
     } else {
-      __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_remaining_evs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 394, __pyx_L1_error)
+      __pyx_t_11 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_remaining_evs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 407, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_12 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 394, __pyx_L1_error)
+      __pyx_t_12 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 407, __pyx_L1_error)
     }
     for (;;) {
       if (likely(!__pyx_t_12)) {
         if (likely(PyList_CheckExact(__pyx_t_1))) {
           if (__pyx_t_11 >= PyList_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_5 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 394, __pyx_L1_error)
+          __pyx_t_5 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 407, __pyx_L1_error)
           #else
-          __pyx_t_5 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 394, __pyx_L1_error)
+          __pyx_t_5 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 407, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           #endif
         } else {
           if (__pyx_t_11 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
           #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-          __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 394, __pyx_L1_error)
+          __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 407, __pyx_L1_error)
           #else
-          __pyx_t_5 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 394, __pyx_L1_error)
+          __pyx_t_5 = PySequence_ITEM(__pyx_t_1, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 407, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_5);
           #endif
         }
@@ -9806,7 +10198,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else __PYX_ERR(0, 394, __pyx_L1_error)
+            else __PYX_ERR(0, 407, __pyx_L1_error)
           }
           break;
         }
@@ -9815,14 +10207,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       __Pyx_XDECREF_SET(__pyx_v_r_ev, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":395
+      /* "MB_Calendar/c_utils.pyx":408
  *     best_list.append(current_list[::-1])
  *     for r_ev in remaining_evs:
  *       new_list = [ev, r_ev]             # <<<<<<<<<<<<<<
  *       rr_evs = remaining_evs.copy()
  *       rr_evs.remove(r_ev)
  */
-      __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 395, __pyx_L1_error)
+      __pyx_t_5 = PyList_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 408, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_INCREF(__pyx_v_ev);
       __Pyx_GIVEREF(__pyx_v_ev);
@@ -9833,14 +10225,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       __Pyx_XDECREF_SET(__pyx_v_new_list, ((PyObject*)__pyx_t_5));
       __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":396
+      /* "MB_Calendar/c_utils.pyx":409
  *     for r_ev in remaining_evs:
  *       new_list = [ev, r_ev]
  *       rr_evs = remaining_evs.copy()             # <<<<<<<<<<<<<<
  *       rr_evs.remove(r_ev)
  *       remaining_orded = order_remaining_events(r_ev["location"], rr_evs, routes)
  */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_remaining_evs, __pyx_n_s_copy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 396, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_remaining_evs, __pyx_n_s_copy); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 409, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __pyx_t_6 = NULL;
       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_9))) {
@@ -9854,20 +10246,20 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       }
       __pyx_t_5 = (__pyx_t_6) ? __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_6) : __Pyx_PyObject_CallNoArg(__pyx_t_9);
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 396, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 409, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_XDECREF_SET(__pyx_v_rr_evs, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":397
+      /* "MB_Calendar/c_utils.pyx":410
  *       new_list = [ev, r_ev]
  *       rr_evs = remaining_evs.copy()
  *       rr_evs.remove(r_ev)             # <<<<<<<<<<<<<<
  *       remaining_orded = order_remaining_events(r_ev["location"], rr_evs, routes)
  *       new_list.extend(remaining_orded)
  */
-      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_rr_evs, __pyx_n_s_remove); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 397, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_rr_evs, __pyx_n_s_remove); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 410, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __pyx_t_6 = NULL;
       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_9))) {
@@ -9881,21 +10273,21 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       }
       __pyx_t_5 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_9, __pyx_t_6, __pyx_v_r_ev) : __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_v_r_ev);
       __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 397, __pyx_L1_error)
+      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 410, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":398
+      /* "MB_Calendar/c_utils.pyx":411
  *       rr_evs = remaining_evs.copy()
  *       rr_evs.remove(r_ev)
  *       remaining_orded = order_remaining_events(r_ev["location"], rr_evs, routes)             # <<<<<<<<<<<<<<
  *       new_list.extend(remaining_orded)
  *       best_list.append(new_list)
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_order_remaining_events); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 398, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_order_remaining_events); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 411, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 398, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 411, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __pyx_t_7 = NULL;
       __pyx_t_8 = 0;
@@ -9912,7 +10304,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_9)) {
         PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_t_6, __pyx_v_rr_evs, __pyx_v_routes};
-        __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 398, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 411, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -9921,14 +10313,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_9)) {
         PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_t_6, __pyx_v_rr_evs, __pyx_v_routes};
-        __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 398, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 411, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       } else
       #endif
       {
-        __pyx_t_13 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 398, __pyx_L1_error)
+        __pyx_t_13 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 411, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_13);
         if (__pyx_t_7) {
           __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_13, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -9942,7 +10334,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
         __Pyx_GIVEREF(__pyx_v_routes);
         PyTuple_SET_ITEM(__pyx_t_13, 2+__pyx_t_8, __pyx_v_routes);
         __pyx_t_6 = 0;
-        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_13, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 398, __pyx_L1_error)
+        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_13, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 411, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
       }
@@ -9950,37 +10342,37 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
       __Pyx_DECREF_SET(__pyx_v_remaining_orded, __pyx_t_5);
       __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":399
+      /* "MB_Calendar/c_utils.pyx":412
  *       rr_evs.remove(r_ev)
  *       remaining_orded = order_remaining_events(r_ev["location"], rr_evs, routes)
  *       new_list.extend(remaining_orded)             # <<<<<<<<<<<<<<
  *       best_list.append(new_list)
  *       best_list.append(new_list[::-1])
  */
-      __pyx_t_10 = __Pyx_PyList_Extend(__pyx_v_new_list, __pyx_v_remaining_orded); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 399, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyList_Extend(__pyx_v_new_list, __pyx_v_remaining_orded); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 412, __pyx_L1_error)
 
-      /* "MB_Calendar/c_utils.pyx":400
+      /* "MB_Calendar/c_utils.pyx":413
  *       remaining_orded = order_remaining_events(r_ev["location"], rr_evs, routes)
  *       new_list.extend(remaining_orded)
  *       best_list.append(new_list)             # <<<<<<<<<<<<<<
  *       best_list.append(new_list[::-1])
  * 
  */
-      __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_v_new_list); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 400, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_v_new_list); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 413, __pyx_L1_error)
 
-      /* "MB_Calendar/c_utils.pyx":401
+      /* "MB_Calendar/c_utils.pyx":414
  *       new_list.extend(remaining_orded)
  *       best_list.append(new_list)
  *       best_list.append(new_list[::-1])             # <<<<<<<<<<<<<<
  * 
  *   return best_list
  */
-      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_new_list, __pyx_slice__4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 401, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetItem(__pyx_v_new_list, __pyx_slice__4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 414, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_t_5); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 401, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_best_list, __pyx_t_5); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 414, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":394
+      /* "MB_Calendar/c_utils.pyx":407
  *     best_list.append(current_list)
  *     best_list.append(current_list[::-1])
  *     for r_ev in remaining_evs:             # <<<<<<<<<<<<<<
@@ -9990,7 +10382,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":386
+    /* "MB_Calendar/c_utils.pyx":399
  * def find_best_permutation(events, routes):
  *   best_list = [events, events[::-1]]
  *   for ev in events:             # <<<<<<<<<<<<<<
@@ -10000,7 +10392,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":403
+  /* "MB_Calendar/c_utils.pyx":416
  *       best_list.append(new_list[::-1])
  * 
  *   return best_list             # <<<<<<<<<<<<<<
@@ -10012,7 +10404,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
   __pyx_r = __pyx_v_best_list;
   goto __pyx_L0;
 
-  /* "MB_Calendar/c_utils.pyx":384
+  /* "MB_Calendar/c_utils.pyx":397
  * 
  * 
  * def find_best_permutation(events, routes):             # <<<<<<<<<<<<<<
@@ -10045,7 +10437,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_10find_best_permutation(CYTHON_
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":405
+/* "MB_Calendar/c_utils.pyx":418
  *   return best_list
  * 
  * def order_remaining_events(start_loc, remaining_evs, routes):             # <<<<<<<<<<<<<<
@@ -10091,17 +10483,17 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_13order_remaining_events(PyObje
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_remaining_evs)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, 1); __PYX_ERR(0, 405, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, 1); __PYX_ERR(0, 418, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_routes)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, 2); __PYX_ERR(0, 405, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, 2); __PYX_ERR(0, 418, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "order_remaining_events") < 0)) __PYX_ERR(0, 405, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "order_remaining_events") < 0)) __PYX_ERR(0, 418, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -10116,7 +10508,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_13order_remaining_events(PyObje
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 405, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("order_remaining_events", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 418, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.order_remaining_events", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -10155,19 +10547,19 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("order_remaining_events", 0);
 
-  /* "MB_Calendar/c_utils.pyx":406
+  /* "MB_Calendar/c_utils.pyx":419
  * 
  * def order_remaining_events(start_loc, remaining_evs, routes):
  *   all_routes_from_start = []             # <<<<<<<<<<<<<<
  *   for ev in remaining_evs:
  *     right_route = find_right_route(routes, start_loc, ev["location"])
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 406, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 419, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_all_routes_from_start = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":407
+  /* "MB_Calendar/c_utils.pyx":420
  * def order_remaining_events(start_loc, remaining_evs, routes):
  *   all_routes_from_start = []
  *   for ev in remaining_evs:             # <<<<<<<<<<<<<<
@@ -10178,26 +10570,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     __pyx_t_1 = __pyx_v_remaining_evs; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_remaining_evs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 407, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_remaining_evs); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 420, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 407, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 420, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 407, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 420, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 407, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 420, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 407, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 420, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 407, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 420, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -10207,7 +10599,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 407, __pyx_L1_error)
+          else __PYX_ERR(0, 420, __pyx_L1_error)
         }
         break;
       }
@@ -10216,16 +10608,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     __Pyx_XDECREF_SET(__pyx_v_ev, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":408
+    /* "MB_Calendar/c_utils.pyx":421
  *   all_routes_from_start = []
  *   for ev in remaining_evs:
  *     right_route = find_right_route(routes, start_loc, ev["location"])             # <<<<<<<<<<<<<<
  *     all_routes_from_start.append(right_route)
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 408, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_find_right_route); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 421, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 408, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 421, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_7 = NULL;
     __pyx_t_8 = 0;
@@ -10242,7 +10634,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_v_routes, __pyx_v_start_loc, __pyx_t_6};
-      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 408, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -10251,14 +10643,14 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
       PyObject *__pyx_temp[4] = {__pyx_t_7, __pyx_v_routes, __pyx_v_start_loc, __pyx_t_6};
-      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 408, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_8, 3+__pyx_t_8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 408, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(3+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 421, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       if (__pyx_t_7) {
         __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -10272,7 +10664,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
       __Pyx_GIVEREF(__pyx_t_6);
       PyTuple_SET_ITEM(__pyx_t_9, 2+__pyx_t_8, __pyx_t_6);
       __pyx_t_6 = 0;
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 408, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
@@ -10280,16 +10672,16 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     __Pyx_XDECREF_SET(__pyx_v_right_route, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":409
+    /* "MB_Calendar/c_utils.pyx":422
  *   for ev in remaining_evs:
  *     right_route = find_right_route(routes, start_loc, ev["location"])
  *     all_routes_from_start.append(right_route)             # <<<<<<<<<<<<<<
  * 
  *   list_routes_ordered = sorted(all_routes_from_start, key=itemgetter('duration'))
  */
-    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_all_routes_from_start, __pyx_v_right_route); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 409, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_all_routes_from_start, __pyx_v_right_route); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 422, __pyx_L1_error)
 
-    /* "MB_Calendar/c_utils.pyx":407
+    /* "MB_Calendar/c_utils.pyx":420
  * def order_remaining_events(start_loc, remaining_evs, routes):
  *   all_routes_from_start = []
  *   for ev in remaining_evs:             # <<<<<<<<<<<<<<
@@ -10299,21 +10691,21 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":411
+  /* "MB_Calendar/c_utils.pyx":424
  *     all_routes_from_start.append(right_route)
  * 
  *   list_routes_ordered = sorted(all_routes_from_start, key=itemgetter('duration'))             # <<<<<<<<<<<<<<
  *   list_ev_ordered = []
  *   for r in list_routes_ordered:
  */
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 411, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_all_routes_from_start);
   __Pyx_GIVEREF(__pyx_v_all_routes_from_start);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_v_all_routes_from_start);
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 411, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_itemgetter); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 411, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_itemgetter); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
   __pyx_t_6 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_9))) {
@@ -10327,31 +10719,31 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   }
   __pyx_t_5 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_9, __pyx_t_6, __pyx_n_s_duration) : __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_n_s_duration);
   __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 411, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_key, __pyx_t_5) < 0) __PYX_ERR(0, 411, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_n_s_key, __pyx_t_5) < 0) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_sorted, __pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 411, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_sorted, __pyx_t_1, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 424, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_list_routes_ordered = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":412
+  /* "MB_Calendar/c_utils.pyx":425
  * 
  *   list_routes_ordered = sorted(all_routes_from_start, key=itemgetter('duration'))
  *   list_ev_ordered = []             # <<<<<<<<<<<<<<
  *   for r in list_routes_ordered:
  *     if r["from"] == start_loc:
  */
-  __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 412, __pyx_L1_error)
+  __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 425, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_v_list_ev_ordered = ((PyObject*)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":413
+  /* "MB_Calendar/c_utils.pyx":426
  *   list_routes_ordered = sorted(all_routes_from_start, key=itemgetter('duration'))
  *   list_ev_ordered = []
  *   for r in list_routes_ordered:             # <<<<<<<<<<<<<<
@@ -10362,26 +10754,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     __pyx_t_5 = __pyx_v_list_routes_ordered; __Pyx_INCREF(__pyx_t_5); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_list_routes_ordered); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 413, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_5 = PyObject_GetIter(__pyx_v_list_routes_ordered); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 426, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_3 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 413, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_5)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 426, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_5))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_5)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 413, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_5, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 426, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 413, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 426, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_5)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 413, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_5, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 426, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 413, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_5, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 426, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -10391,7 +10783,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 413, __pyx_L1_error)
+          else __PYX_ERR(0, 426, __pyx_L1_error)
         }
         break;
       }
@@ -10400,34 +10792,34 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     __Pyx_XDECREF_SET(__pyx_v_r, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":414
+    /* "MB_Calendar/c_utils.pyx":427
  *   list_ev_ordered = []
  *   for r in list_routes_ordered:
  *     if r["from"] == start_loc:             # <<<<<<<<<<<<<<
  *       location = r["to"]
  *     else:
  */
-    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 414, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 427, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_1 = PyObject_RichCompare(__pyx_t_4, __pyx_v_start_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 414, __pyx_L1_error)
+    __pyx_t_1 = PyObject_RichCompare(__pyx_t_4, __pyx_v_start_loc, Py_EQ); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 427, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 414, __pyx_L1_error)
+    __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_11 < 0)) __PYX_ERR(0, 427, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     if (__pyx_t_11) {
 
-      /* "MB_Calendar/c_utils.pyx":415
+      /* "MB_Calendar/c_utils.pyx":428
  *   for r in list_routes_ordered:
  *     if r["from"] == start_loc:
  *       location = r["to"]             # <<<<<<<<<<<<<<
  *     else:
  *       location = r["from"]
  */
-      __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 415, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_to); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 428, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_XDECREF_SET(__pyx_v_location, __pyx_t_1);
       __pyx_t_1 = 0;
 
-      /* "MB_Calendar/c_utils.pyx":414
+      /* "MB_Calendar/c_utils.pyx":427
  *   list_ev_ordered = []
  *   for r in list_routes_ordered:
  *     if r["from"] == start_loc:             # <<<<<<<<<<<<<<
@@ -10437,7 +10829,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
       goto __pyx_L7;
     }
 
-    /* "MB_Calendar/c_utils.pyx":417
+    /* "MB_Calendar/c_utils.pyx":430
  *       location = r["to"]
  *     else:
  *       location = r["from"]             # <<<<<<<<<<<<<<
@@ -10445,21 +10837,21 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
  *     list_ev_ordered.append(get_event_from_location(remaining_evs, location))
  */
     /*else*/ {
-      __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 417, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Dict_GetItem(__pyx_v_r, __pyx_n_s_from); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 430, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_XDECREF_SET(__pyx_v_location, __pyx_t_1);
       __pyx_t_1 = 0;
     }
     __pyx_L7:;
 
-    /* "MB_Calendar/c_utils.pyx":419
+    /* "MB_Calendar/c_utils.pyx":432
  *       location = r["from"]
  * 
  *     list_ev_ordered.append(get_event_from_location(remaining_evs, location))             # <<<<<<<<<<<<<<
  *   return list_ev_ordered
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_get_event_from_location); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 419, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_get_event_from_location); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 432, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_9 = NULL;
     __pyx_t_8 = 0;
@@ -10476,7 +10868,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_9, __pyx_v_remaining_evs, __pyx_v_location};
-      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 419, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 432, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
@@ -10484,13 +10876,13 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_9, __pyx_v_remaining_evs, __pyx_v_location};
-      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 419, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 432, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_GOTREF(__pyx_t_1);
     } else
     #endif
     {
-      __pyx_t_6 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 419, __pyx_L1_error)
+      __pyx_t_6 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 432, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       if (__pyx_t_9) {
         __Pyx_GIVEREF(__pyx_t_9); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_9); __pyx_t_9 = NULL;
@@ -10501,15 +10893,15 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
       __Pyx_INCREF(__pyx_v_location);
       __Pyx_GIVEREF(__pyx_v_location);
       PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_8, __pyx_v_location);
-      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 419, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 432, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_list_ev_ordered, __pyx_t_1); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 419, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_list_ev_ordered, __pyx_t_1); if (unlikely(__pyx_t_10 == ((int)-1))) __PYX_ERR(0, 432, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":413
+    /* "MB_Calendar/c_utils.pyx":426
  *   list_routes_ordered = sorted(all_routes_from_start, key=itemgetter('duration'))
  *   list_ev_ordered = []
  *   for r in list_routes_ordered:             # <<<<<<<<<<<<<<
@@ -10519,7 +10911,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   }
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":420
+  /* "MB_Calendar/c_utils.pyx":433
  * 
  *     list_ev_ordered.append(get_event_from_location(remaining_evs, location))
  *   return list_ev_ordered             # <<<<<<<<<<<<<<
@@ -10531,7 +10923,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   __pyx_r = __pyx_v_list_ev_ordered;
   goto __pyx_L0;
 
-  /* "MB_Calendar/c_utils.pyx":405
+  /* "MB_Calendar/c_utils.pyx":418
  *   return best_list
  * 
  * def order_remaining_events(start_loc, remaining_evs, routes):             # <<<<<<<<<<<<<<
@@ -10562,7 +10954,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_12order_remaining_events(CYTHON
   return __pyx_r;
 }
 
-/* "MB_Calendar/c_utils.pyx":422
+/* "MB_Calendar/c_utils.pyx":435
  *   return list_ev_ordered
  * 
  * def get_event_from_location(events, location):             # <<<<<<<<<<<<<<
@@ -10605,11 +10997,11 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_15get_event_from_location(PyObj
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_location)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("get_event_from_location", 1, 2, 2, 1); __PYX_ERR(0, 422, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("get_event_from_location", 1, 2, 2, 1); __PYX_ERR(0, 435, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "get_event_from_location") < 0)) __PYX_ERR(0, 422, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "get_event_from_location") < 0)) __PYX_ERR(0, 435, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -10622,7 +11014,7 @@ static PyObject *__pyx_pw_11MB_Calendar_7c_utils_15get_event_from_location(PyObj
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("get_event_from_location", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 422, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("get_event_from_location", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 435, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("MB_Calendar.c_utils.get_event_from_location", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -10650,7 +11042,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_event_from_location", 0);
 
-  /* "MB_Calendar/c_utils.pyx":423
+  /* "MB_Calendar/c_utils.pyx":436
  * 
  * def get_event_from_location(events, location):
  *   for ev in events:             # <<<<<<<<<<<<<<
@@ -10661,26 +11053,26 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
     __pyx_t_1 = __pyx_v_events; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
     __pyx_t_3 = NULL;
   } else {
-    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_events); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 423, __pyx_L1_error)
+    __pyx_t_2 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_events); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 436, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 423, __pyx_L1_error)
+    __pyx_t_3 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 436, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_3)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 423, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 436, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 423, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 423, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_4); __pyx_t_2++; if (unlikely(0 < 0)) __PYX_ERR(0, 436, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 423, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 436, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -10690,7 +11082,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 423, __pyx_L1_error)
+          else __PYX_ERR(0, 436, __pyx_L1_error)
         }
         break;
       }
@@ -10699,22 +11091,22 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
     __Pyx_XDECREF_SET(__pyx_v_ev, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "MB_Calendar/c_utils.pyx":424
+    /* "MB_Calendar/c_utils.pyx":437
  * def get_event_from_location(events, location):
  *   for ev in events:
  *     if ev["location"]==location:             # <<<<<<<<<<<<<<
  *       return ev
  *   return ev
  */
-    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 424, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Dict_GetItem(__pyx_v_ev, __pyx_n_s_location); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 437, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, __pyx_v_location, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 424, __pyx_L1_error)
+    __pyx_t_5 = PyObject_RichCompare(__pyx_t_4, __pyx_v_location, Py_EQ); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 437, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 424, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 437, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_6) {
 
-      /* "MB_Calendar/c_utils.pyx":425
+      /* "MB_Calendar/c_utils.pyx":438
  *   for ev in events:
  *     if ev["location"]==location:
  *       return ev             # <<<<<<<<<<<<<<
@@ -10726,7 +11118,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
 
-      /* "MB_Calendar/c_utils.pyx":424
+      /* "MB_Calendar/c_utils.pyx":437
  * def get_event_from_location(events, location):
  *   for ev in events:
  *     if ev["location"]==location:             # <<<<<<<<<<<<<<
@@ -10735,7 +11127,7 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
  */
     }
 
-    /* "MB_Calendar/c_utils.pyx":423
+    /* "MB_Calendar/c_utils.pyx":436
  * 
  * def get_event_from_location(events, location):
  *   for ev in events:             # <<<<<<<<<<<<<<
@@ -10745,18 +11137,18 @@ static PyObject *__pyx_pf_11MB_Calendar_7c_utils_14get_event_from_location(CYTHO
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":426
+  /* "MB_Calendar/c_utils.pyx":439
  *     if ev["location"]==location:
  *       return ev
  *   return ev             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  if (unlikely(!__pyx_v_ev)) { __Pyx_RaiseUnboundLocalError("ev"); __PYX_ERR(0, 426, __pyx_L1_error) }
+  if (unlikely(!__pyx_v_ev)) { __Pyx_RaiseUnboundLocalError("ev"); __PYX_ERR(0, 439, __pyx_L1_error) }
   __Pyx_INCREF(__pyx_v_ev);
   __pyx_r = __pyx_v_ev;
   goto __pyx_L0;
 
-  /* "MB_Calendar/c_utils.pyx":422
+  /* "MB_Calendar/c_utils.pyx":435
  *   return list_ev_ordered
  * 
  * def get_event_from_location(events, location):             # <<<<<<<<<<<<<<
@@ -10834,6 +11226,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s__2, __pyx_k__2, sizeof(__pyx_k__2), 0, 0, 1, 0},
   {&__pyx_n_s_act, __pyx_k_act, sizeof(__pyx_k_act), 0, 0, 1, 1},
   {&__pyx_n_s_act_2, __pyx_k_act_2, sizeof(__pyx_k_act_2), 0, 0, 1, 1},
+  {&__pyx_n_s_act_in_day, __pyx_k_act_in_day, sizeof(__pyx_k_act_in_day), 0, 0, 1, 1},
   {&__pyx_n_s_activity, __pyx_k_activity, sizeof(__pyx_k_activity), 0, 0, 1, 1},
   {&__pyx_n_s_activity_helper, __pyx_k_activity_helper, sizeof(__pyx_k_activity_helper), 0, 0, 1, 1},
   {&__pyx_n_s_activity_today, __pyx_k_activity_today, sizeof(__pyx_k_activity_today), 0, 0, 1, 1},
@@ -10878,6 +11271,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_get, __pyx_k_get, sizeof(__pyx_k_get), 0, 0, 1, 1},
   {&__pyx_n_s_get_event_from_location, __pyx_k_get_event_from_location, sizeof(__pyx_k_get_event_from_location), 0, 0, 1, 1},
   {&__pyx_n_s_hour_before_add, __pyx_k_hour_before_add, sizeof(__pyx_k_hour_before_add), 0, 0, 1, 1},
+  {&__pyx_n_s_hour_event_in_day, __pyx_k_hour_event_in_day, sizeof(__pyx_k_hour_event_in_day), 0, 0, 1, 1},
   {&__pyx_n_s_hour_now, __pyx_k_hour_now, sizeof(__pyx_k_hour_now), 0, 0, 1, 1},
   {&__pyx_n_s_hour_toev_ev_back, __pyx_k_hour_toev_ev_back, sizeof(__pyx_k_hour_toev_ev_back), 0, 0, 1, 1},
   {&__pyx_n_s_hours_ev_remaining, __pyx_k_hours_ev_remaining, sizeof(__pyx_k_hours_ev_remaining), 0, 0, 1, 1},
@@ -10956,10 +11350,10 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 184, __pyx_L1_error)
-  __pyx_builtin_round = __Pyx_GetBuiltinName(__pyx_n_s_round); if (!__pyx_builtin_round) __PYX_ERR(0, 244, __pyx_L1_error)
-  __pyx_builtin_max = __Pyx_GetBuiltinName(__pyx_n_s_max); if (!__pyx_builtin_max) __PYX_ERR(0, 275, __pyx_L1_error)
-  __pyx_builtin_sorted = __Pyx_GetBuiltinName(__pyx_n_s_sorted); if (!__pyx_builtin_sorted) __PYX_ERR(0, 411, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 196, __pyx_L1_error)
+  __pyx_builtin_round = __Pyx_GetBuiltinName(__pyx_n_s_round); if (!__pyx_builtin_round) __PYX_ERR(0, 257, __pyx_L1_error)
+  __pyx_builtin_max = __Pyx_GetBuiltinName(__pyx_n_s_max); if (!__pyx_builtin_max) __PYX_ERR(0, 288, __pyx_L1_error)
+  __pyx_builtin_sorted = __Pyx_GetBuiltinName(__pyx_n_s_sorted); if (!__pyx_builtin_sorted) __PYX_ERR(0, 424, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -10969,25 +11363,25 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "MB_Calendar/c_utils.pyx":269
+  /* "MB_Calendar/c_utils.pyx":282
  *                     activity["description"] = act["subject"]
  *                     activity["location"] =  act["location"]
  *                     activity["info"] =  act.get("info", "")             # <<<<<<<<<<<<<<
  *                     trip_splitted = False
  *                 final_planner[week].append(activity)
  */
-  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_info, __pyx_kp_s__2); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 269, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_info, __pyx_kp_s__2); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 282, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "MB_Calendar/c_utils.pyx":385
+  /* "MB_Calendar/c_utils.pyx":398
  * 
  * def find_best_permutation(events, routes):
  *   best_list = [events, events[::-1]]             # <<<<<<<<<<<<<<
  *   for ev in events:
  *     remaining_evs = events.copy()
  */
-  __pyx_slice__4 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__4)) __PYX_ERR(0, 385, __pyx_L1_error)
+  __pyx_slice__4 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__4)) __PYX_ERR(0, 398, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_slice__4);
   __Pyx_GIVEREF(__pyx_slice__4);
 
@@ -11010,82 +11404,82 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     # print("------------------------")
  *     # print("Aggiungo activity")
  */
-  __pyx_tuple__7 = PyTuple_Pack(18, __pyx_n_s_planner, __pyx_n_s_day, __pyx_n_s_week, __pyx_n_s_hour_now, __pyx_n_s_activity, __pyx_n_s_time_left_today, __pyx_n_s_event_days_of_work, __pyx_n_s_hours_ev_remaining, __pyx_n_s_today_activity, __pyx_n_s_d, __pyx_n_s_act, __pyx_n_s_final_act, __pyx_n_s_activity_today, __pyx_n_s_time_still_needed, __pyx_n_s_days_of_activity_after_today, __pyx_n_s_time_left_last_day, __pyx_n_s_activity_helper, __pyx_n_s_final_activity); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_tuple__7 = PyTuple_Pack(20, __pyx_n_s_planner, __pyx_n_s_day, __pyx_n_s_week, __pyx_n_s_hour_now, __pyx_n_s_activity, __pyx_n_s_hour_event_in_day, __pyx_n_s_act_in_day, __pyx_n_s_time_left_today, __pyx_n_s_event_days_of_work, __pyx_n_s_hours_ev_remaining, __pyx_n_s_today_activity, __pyx_n_s_d, __pyx_n_s_act, __pyx_n_s_final_act, __pyx_n_s_activity_today, __pyx_n_s_time_still_needed, __pyx_n_s_days_of_activity_after_today, __pyx_n_s_time_left_last_day, __pyx_n_s_activity_helper, __pyx_n_s_final_activity); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(5, 0, 18, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_add_activity_to_planner_helper, 142, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(5, 0, 20, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_add_activity_to_planner_helper, 142, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 142, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":231
+  /* "MB_Calendar/c_utils.pyx":244
  * 
  * 
  * def format_order_monthly_planner(planner, base):             # <<<<<<<<<<<<<<
  *     final_planner = {}
  *     from_loc = base
  */
-  __pyx_tuple__9 = PyTuple_Pack(10, __pyx_n_s_planner, __pyx_n_s_base, __pyx_n_s_final_planner, __pyx_n_s_from_loc, __pyx_n_s_week, __pyx_n_s_trip_splitted, __pyx_n_s_day, __pyx_n_s_hour_now, __pyx_n_s_act_2, __pyx_n_s_activity); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 231, __pyx_L1_error)
+  __pyx_tuple__9 = PyTuple_Pack(10, __pyx_n_s_planner, __pyx_n_s_base, __pyx_n_s_final_planner, __pyx_n_s_from_loc, __pyx_n_s_week, __pyx_n_s_trip_splitted, __pyx_n_s_day, __pyx_n_s_hour_now, __pyx_n_s_act_2, __pyx_n_s_activity); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 244, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_format_order_monthly_planner, 231, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 231, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_format_order_monthly_planner, 244, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 244, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":274
+  /* "MB_Calendar/c_utils.pyx":287
  *     return final_planner
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):             # <<<<<<<<<<<<<<
  *     if len(old_week.get(max(old_week.keys()))) == 0:
  *         last_trip = old_week.get(max(old_week.keys())-1)[-1]
  */
-  __pyx_tuple__11 = PyTuple_Pack(31, __pyx_n_s_old_week, __pyx_n_s_max_days_in_week, __pyx_n_s_base, __pyx_n_s_routes, __pyx_n_s_last_trip, __pyx_n_s_days_out, __pyx_n_s_distance_remaining, __pyx_n_s_reordered_list, __pyx_n_s_old_text, __pyx_n_s_key, __pyx_n_s_value, __pyx_n_s_act_2, __pyx_n_s_permutations, __pyx_n_s_list_permutated, __pyx_n_s_combo, __pyx_n_s_current_planner, __pyx_n_s_week, __pyx_n_s_day, __pyx_n_s_hour_now, __pyx_n_s_from_loc, __pyx_n_s_event, __pyx_n_s_r_to_ev, __pyx_n_s_r_to_ev_duration, __pyx_n_s_ev_duration, __pyx_n_s_r_to_base, __pyx_n_s_r_to_base_duration, __pyx_n_s_r_from_loc_to_base, __pyx_n_s_r_from_loc_to_base_duration, __pyx_n_s_new_planner, __pyx_n_s_activity, __pyx_n_s_ev_time_in_day); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(31, __pyx_n_s_old_week, __pyx_n_s_max_days_in_week, __pyx_n_s_base, __pyx_n_s_routes, __pyx_n_s_last_trip, __pyx_n_s_days_out, __pyx_n_s_distance_remaining, __pyx_n_s_reordered_list, __pyx_n_s_old_text, __pyx_n_s_key, __pyx_n_s_value, __pyx_n_s_act_2, __pyx_n_s_permutations, __pyx_n_s_list_permutated, __pyx_n_s_combo, __pyx_n_s_current_planner, __pyx_n_s_week, __pyx_n_s_day, __pyx_n_s_hour_now, __pyx_n_s_from_loc, __pyx_n_s_event, __pyx_n_s_r_to_ev, __pyx_n_s_r_to_ev_duration, __pyx_n_s_ev_duration, __pyx_n_s_r_to_base, __pyx_n_s_r_to_base_duration, __pyx_n_s_r_from_loc_to_base, __pyx_n_s_r_from_loc_to_base_duration, __pyx_n_s_new_planner, __pyx_n_s_activity, __pyx_n_s_ev_time_in_day); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 287, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(4, 0, 31, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_reorganize_week, 274, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(4, 0, 31, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_reorganize_week, 287, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 287, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":367
+  /* "MB_Calendar/c_utils.pyx":380
  *         return new_planner[1]
  * 
  * def find_right_route(routes, from_loc, to_loc):             # <<<<<<<<<<<<<<
  *     """
  *     Find route (already evaluated) between two points
  */
-  __pyx_tuple__13 = PyTuple_Pack(5, __pyx_n_s_routes, __pyx_n_s_from_loc, __pyx_n_s_to_loc, __pyx_n_s_right_route, __pyx_n_s_r); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 367, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(5, __pyx_n_s_routes, __pyx_n_s_from_loc, __pyx_n_s_to_loc, __pyx_n_s_right_route, __pyx_n_s_r); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_find_right_route, 367, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 367, __pyx_L1_error)
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_find_right_route, 380, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 380, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":384
+  /* "MB_Calendar/c_utils.pyx":397
  * 
  * 
  * def find_best_permutation(events, routes):             # <<<<<<<<<<<<<<
  *   best_list = [events, events[::-1]]
  *   for ev in events:
  */
-  __pyx_tuple__15 = PyTuple_Pack(10, __pyx_n_s_events, __pyx_n_s_routes, __pyx_n_s_best_list, __pyx_n_s_ev, __pyx_n_s_remaining_evs, __pyx_n_s_current_list, __pyx_n_s_remaining_orded, __pyx_n_s_r_ev, __pyx_n_s_new_list, __pyx_n_s_rr_evs); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __pyx_tuple__15 = PyTuple_Pack(10, __pyx_n_s_events, __pyx_n_s_routes, __pyx_n_s_best_list, __pyx_n_s_ev, __pyx_n_s_remaining_evs, __pyx_n_s_current_list, __pyx_n_s_remaining_orded, __pyx_n_s_r_ev, __pyx_n_s_new_list, __pyx_n_s_rr_evs); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
-  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_find_best_permutation, 384, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_find_best_permutation, 397, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 397, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":405
+  /* "MB_Calendar/c_utils.pyx":418
  *   return best_list
  * 
  * def order_remaining_events(start_loc, remaining_evs, routes):             # <<<<<<<<<<<<<<
  *   all_routes_from_start = []
  *   for ev in remaining_evs:
  */
-  __pyx_tuple__17 = PyTuple_Pack(10, __pyx_n_s_start_loc, __pyx_n_s_remaining_evs, __pyx_n_s_routes, __pyx_n_s_all_routes_from_start, __pyx_n_s_ev, __pyx_n_s_right_route, __pyx_n_s_list_routes_ordered, __pyx_n_s_list_ev_ordered, __pyx_n_s_r, __pyx_n_s_location); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 405, __pyx_L1_error)
+  __pyx_tuple__17 = PyTuple_Pack(10, __pyx_n_s_start_loc, __pyx_n_s_remaining_evs, __pyx_n_s_routes, __pyx_n_s_all_routes_from_start, __pyx_n_s_ev, __pyx_n_s_right_route, __pyx_n_s_list_routes_ordered, __pyx_n_s_list_ev_ordered, __pyx_n_s_r, __pyx_n_s_location); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 418, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
-  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_order_remaining_events, 405, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 405, __pyx_L1_error)
+  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_order_remaining_events, 418, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 418, __pyx_L1_error)
 
-  /* "MB_Calendar/c_utils.pyx":422
+  /* "MB_Calendar/c_utils.pyx":435
  *   return list_ev_ordered
  * 
  * def get_event_from_location(events, location):             # <<<<<<<<<<<<<<
  *   for ev in events:
  *     if ev["location"]==location:
  */
-  __pyx_tuple__19 = PyTuple_Pack(3, __pyx_n_s_events, __pyx_n_s_location, __pyx_n_s_ev); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 422, __pyx_L1_error)
+  __pyx_tuple__19 = PyTuple_Pack(3, __pyx_n_s_events, __pyx_n_s_location, __pyx_n_s_ev); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 435, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
-  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_get_event_from_location, 422, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 422, __pyx_L1_error)
+  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_MB_Calendar_c_utils_pyx, __pyx_n_s_get_event_from_location, 435, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 435, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -11097,7 +11491,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   __pyx_float_2_0 = PyFloat_FromDouble(2.0); if (unlikely(!__pyx_float_2_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_float_8_0 = PyFloat_FromDouble(8.0); if (unlikely(!__pyx_float_8_0)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __pyx_float_17_0 = PyFloat_FromDouble(17.0); if (unlikely(!__pyx_float_17_0)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_17_5 = PyFloat_FromDouble(17.5); if (unlikely(!__pyx_float_17_5)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_2 = PyInt_FromLong(2); if (unlikely(!__pyx_int_2)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -11410,7 +11804,7 @@ if (!__Pyx_RefNanny) {
  * from operator import itemgetter
  * 
  * START_HOUR_WORKING = 8.0             # <<<<<<<<<<<<<<
- * END_HOUR_WORKING = 17.0
+ * END_HOUR_WORKING = 17.5
  * TOLERATION_TIME = 2.0
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_START_HOUR_WORKING, __pyx_float_8_0) < 0) __PYX_ERR(0, 4, __pyx_L1_error)
@@ -11418,15 +11812,15 @@ if (!__Pyx_RefNanny) {
   /* "MB_Calendar/c_utils.pyx":5
  * 
  * START_HOUR_WORKING = 8.0
- * END_HOUR_WORKING = 17.0             # <<<<<<<<<<<<<<
+ * END_HOUR_WORKING = 17.5             # <<<<<<<<<<<<<<
  * TOLERATION_TIME = 2.0
  * 
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_END_HOUR_WORKING, __pyx_float_17_0) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_END_HOUR_WORKING, __pyx_float_17_5) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
 
   /* "MB_Calendar/c_utils.pyx":6
  * START_HOUR_WORKING = 8.0
- * END_HOUR_WORKING = 17.0
+ * END_HOUR_WORKING = 17.5
  * TOLERATION_TIME = 2.0             # <<<<<<<<<<<<<<
  * 
  * def find_best_monthly_planner(events, routes, max_days_in_week, base):
@@ -11457,76 +11851,76 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_add_activity_to_planner_helper, __pyx_t_2) < 0) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":231
+  /* "MB_Calendar/c_utils.pyx":244
  * 
  * 
  * def format_order_monthly_planner(planner, base):             # <<<<<<<<<<<<<<
  *     final_planner = {}
  *     from_loc = base
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_5format_order_monthly_planner, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 231, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_5format_order_monthly_planner, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 244, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_format_order_monthly_planner, __pyx_t_2) < 0) __PYX_ERR(0, 231, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_format_order_monthly_planner, __pyx_t_2) < 0) __PYX_ERR(0, 244, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":274
+  /* "MB_Calendar/c_utils.pyx":287
  *     return final_planner
  * 
  * def reorganize_week(old_week, max_days_in_week, base, routes):             # <<<<<<<<<<<<<<
  *     if len(old_week.get(max(old_week.keys()))) == 0:
  *         last_trip = old_week.get(max(old_week.keys())-1)[-1]
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_7reorganize_week, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 274, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_7reorganize_week, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 287, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_reorganize_week, __pyx_t_2) < 0) __PYX_ERR(0, 274, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_reorganize_week, __pyx_t_2) < 0) __PYX_ERR(0, 287, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":367
+  /* "MB_Calendar/c_utils.pyx":380
  *         return new_planner[1]
  * 
  * def find_right_route(routes, from_loc, to_loc):             # <<<<<<<<<<<<<<
  *     """
  *     Find route (already evaluated) between two points
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_9find_right_route, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 367, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_9find_right_route, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_find_right_route, __pyx_t_2) < 0) __PYX_ERR(0, 367, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_find_right_route, __pyx_t_2) < 0) __PYX_ERR(0, 380, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":384
+  /* "MB_Calendar/c_utils.pyx":397
  * 
  * 
  * def find_best_permutation(events, routes):             # <<<<<<<<<<<<<<
  *   best_list = [events, events[::-1]]
  *   for ev in events:
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_11find_best_permutation, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 384, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_11find_best_permutation, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_find_best_permutation, __pyx_t_2) < 0) __PYX_ERR(0, 384, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_find_best_permutation, __pyx_t_2) < 0) __PYX_ERR(0, 397, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":405
+  /* "MB_Calendar/c_utils.pyx":418
  *   return best_list
  * 
  * def order_remaining_events(start_loc, remaining_evs, routes):             # <<<<<<<<<<<<<<
  *   all_routes_from_start = []
  *   for ev in remaining_evs:
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_13order_remaining_events, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 405, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_13order_remaining_events, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 418, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_order_remaining_events, __pyx_t_2) < 0) __PYX_ERR(0, 405, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_order_remaining_events, __pyx_t_2) < 0) __PYX_ERR(0, 418, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "MB_Calendar/c_utils.pyx":422
+  /* "MB_Calendar/c_utils.pyx":435
  *   return list_ev_ordered
  * 
  * def get_event_from_location(events, location):             # <<<<<<<<<<<<<<
  *   for ev in events:
  *     if ev["location"]==location:
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_15get_event_from_location, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 422, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_11MB_Calendar_7c_utils_15get_event_from_location, NULL, __pyx_n_s_MB_Calendar_c_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 435, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_event_from_location, __pyx_t_2) < 0) __PYX_ERR(0, 422, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_event_from_location, __pyx_t_2) < 0) __PYX_ERR(0, 435, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "MB_Calendar/c_utils.pyx":1
@@ -12971,6 +13365,130 @@ static CYTHON_INLINE int __Pyx_PyObject_Append(PyObject* L, PyObject* x) {
     }
     return 0;
 }
+
+/* PyIntBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_PyInt_SubtractCObj(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, int inplace, int zerodivision_check) {
+    (void)inplace;
+    (void)zerodivision_check;
+    #if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_CheckExact(op2))) {
+        const long a = intval;
+        long x;
+        long b = PyInt_AS_LONG(op2);
+            x = (long)((unsigned long)a - b);
+            if (likely((x^a) >= 0 || (x^~b) >= 0))
+                return PyInt_FromLong(x);
+            return PyLong_Type.tp_as_number->nb_subtract(op1, op2);
+    }
+    #endif
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op2))) {
+        const long a = intval;
+        long b, x;
+#ifdef HAVE_LONG_LONG
+        const PY_LONG_LONG lla = intval;
+        PY_LONG_LONG llb, llx;
+#endif
+        const digit* digits = ((PyLongObject*)op2)->ob_digit;
+        const Py_ssize_t size = Py_SIZE(op2);
+        if (likely(__Pyx_sst_abs(size) <= 1)) {
+            b = likely(size) ? digits[0] : 0;
+            if (size == -1) b = -b;
+        } else {
+            switch (size) {
+                case -2:
+                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                        b = -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                        llb = -(PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 2:
+                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                        b = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                        llb = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case -3:
+                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                        b = -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                        llb = -(PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 3:
+                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                        b = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                        llb = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case -4:
+                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                        b = -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                        llb = -(PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 4:
+                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                        b = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                        llb = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                default: return PyLong_Type.tp_as_number->nb_subtract(op1, op2);
+            }
+        }
+                x = a - b;
+            return PyLong_FromLong(x);
+#ifdef HAVE_LONG_LONG
+        long_long:
+                llx = lla - llb;
+            return PyLong_FromLongLong(llx);
+#endif
+        
+        
+    }
+    #endif
+    if (PyFloat_CheckExact(op2)) {
+        const long a = intval;
+        double b = PyFloat_AS_DOUBLE(op2);
+            double result;
+            PyFPE_START_PROTECT("subtract", return NULL)
+            result = ((double)a) - (double)b;
+            PyFPE_END_PROTECT(result)
+            return PyFloat_FromDouble(result);
+    }
+    return (inplace ? PyNumber_InPlaceSubtract : PyNumber_Subtract)(op1, op2);
+}
+#endif
 
 /* PyIntBinop */
 #if !CYTHON_COMPILING_IN_PYPY

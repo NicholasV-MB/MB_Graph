@@ -2,7 +2,7 @@ import itertools
 from operator import itemgetter
 
 START_HOUR_WORKING = 8.0
-END_HOUR_WORKING = 17.0
+END_HOUR_WORKING = 17.5
 TOLERATION_TIME = 2.0
 
 def find_best_monthly_planner(events, routes, max_days_in_week, base):
@@ -13,7 +13,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
     else:
         list_permutated = find_best_permutation(events, routes)
 
-    # list_permutated = [list_permutated[18]]
+    # list_permutated = [list_permutated[600]]
     # list_permutated = [events]
     min_time = float('inf')
     max_days_in_week = int(max_days_in_week)
@@ -131,7 +131,7 @@ def find_best_monthly_planner(events, routes, max_days_in_week, base):
             del current_planner
         idx_combo += 1
 
-
+    # print("right_combo_idx: "+str(right_combo_idx))
     for w in best_planner:
         best_planner[w] = reorganize_week(best_planner[w], max_days_in_week, base, routes)
 
@@ -148,32 +148,44 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
     # print("week: "+str(week))
     if bool(activity)==False:
       return planner, day, hour_now
-    if (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME):
+    hour_event_in_day = 0
+    for _act_in_day in planner[week][day]:
+        if _act_in_day["text"].startswith("->")==False:
+            hour_event_in_day += _act_in_day["duration"]
+    # print("hour_event_in_day: "+str(hour_event_in_day))
+    if (activity["text"].startswith("->") and \
+        (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
+        (activity["text"].startswith("->")==False and \
+        (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \
+        (float(activity["duration"])+hour_event_in_day)<=8):
         # activity in giornata
         # print("activity in giornata")
         planner[week][day].append(activity)
         hour_now += float(activity["duration"])
-        if hour_now > END_HOUR_WORKING:
+        if hour_now > END_HOUR_WORKING and activity["text"].startswith("->"):
           day += 1
           planner[week][day] = []
           hour_now = START_HOUR_WORKING
     else:
         # activity non si conclude in giornata
         # print("activity non si conclude in giornata")
-        time_left_today = TOLERATION_TIME+END_HOUR_WORKING - hour_now
+        time_left_today = END_HOUR_WORKING - hour_now
         # split solo se è strada oppure evento in base al modulo 8
         # print("split solo se è strada oppure evento in base al modulo 8")
         if activity["text"].startswith("->")==False:
           # è un evento
+          time_left_today += (TOLERATION_TIME/2)
           # print("è un evento")
           event_days_of_work = int(activity["duration"]//8)
           # print("event_days_of_work: "+str(event_days_of_work))
           hours_ev_remaining = activity["duration"] - (event_days_of_work*8)
-          if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and time_left_today<8:
+          if hours_ev_remaining <= time_left_today and hours_ev_remaining>0 and \
+             time_left_today<8 and (hours_ev_remaining+hour_event_in_day)<=8:
               today_activity = activity.copy()
-              today_activity["duration"] = hours_ev_remaining
+              today_activity["duration"] = time_left_today
               planner[week][day].append(today_activity)
-              hours_ev_remaining = 0
+              hours_ev_remaining = 8-(time_left_today-hours_ev_remaining)
+              event_days_of_work -= 1
           elif event_days_of_work>=1 and time_left_today>=8:
               today_activity = activity.copy()
               today_activity["duration"] = 8
@@ -194,7 +206,8 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
           hour_now = START_HOUR_WORKING + hours_ev_remaining
         else:
           # strada che non si conclude in giornata
-          # # print("strada che non si conclude in giornata")
+          # print("strada che non si conclude in giornata")
+          time_left_today += TOLERATION_TIME
           activity_today = activity.copy()
           activity_today["duration"] = time_left_today
           planner[week][day].append(activity_today)
