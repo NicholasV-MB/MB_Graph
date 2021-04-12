@@ -156,7 +156,7 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
     if (activity["text"].startswith("->") and \
         (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+TOLERATION_TIME) ) or \
         (activity["text"].startswith("->")==False and \
-        (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/2))  and \
+        (float(activity["duration"])+hour_now)<(END_HOUR_WORKING+(TOLERATION_TIME/4))  and \
         (float(activity["duration"])+hour_event_in_day)<=8):
         # activity in giornata
         # print("activity in giornata")
@@ -174,7 +174,7 @@ def add_activity_to_planner_helper(planner, day, week, hour_now, activity):
         # print("split solo se è strada oppure evento in base al modulo 8")
         if activity["text"].startswith("->")==False:
           # è un evento
-          time_left_today += (TOLERATION_TIME/2)
+          time_left_today += (TOLERATION_TIME/4)
           # print("è un evento")
           event_days_of_work = int(activity["duration"]//8)
           # print("event_days_of_work: "+str(event_days_of_work))
@@ -286,11 +286,13 @@ def format_order_monthly_planner(planner, base):
 
 def reorganize_week(old_week, max_days_in_week, base, routes):
     if len(old_week.get(max(old_week.keys()))) == 0:
-        last_trip = old_week.get(max(old_week.keys())-1)[-1]
-    else:
-        last_trip = old_week.get(max(old_week.keys()))[-1]
+        old_week.pop(max(old_week.keys()))
+        # last_trip = old_week.get(max(old_week.keys())-1)[-1]
+    # else:
+    last_trip = old_week.get(max(old_week.keys()))[-1]
 
     days_out = len(old_week)
+
     # print("first trip: "+old_week.get(1)[0]["text"])
     # print("last trip: "+last_trip["text"])
     distance_remaining = float(old_week.get(1)[0]["distance"]) - float(last_trip["distance"])+50
